@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import CurrencySelector from "./CurrencySelector";
 import { User } from "../utils/storage";
+import { settings } from "../settings/settings";
 
 interface TransactionInputProps {
   onAddTransaction: (
@@ -17,7 +18,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
   users,
 }) => {
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState(settings.defaultCurrency);
   const [message, setMessage] = useState("");
   const [userId, setUserId] = useState("");
 

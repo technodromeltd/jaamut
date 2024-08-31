@@ -5,10 +5,17 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "build" }
+    },
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    { "src": "/api/groups", "dest": "/api/groups.ts" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
     { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/index.html" }
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/[^.]+", "dest": "/index.html" }
   ]
 }

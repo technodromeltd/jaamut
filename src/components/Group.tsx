@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import TransactionInput from "./TransactionInput";
 import GroupLayout from "./GroupLayout";
 import DeleteConfirmation from "./DeleteConfirmation";
+import TransactionDetails from "./TransactionDetails";
 import Button from "./Button";
 import {
   Transaction,
@@ -12,6 +13,9 @@ import {
   addRecentGroup,
 } from "../utils/storage";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import Loading from "./Loading";
+import GroupNotFound from "./GroupNotFound";
+import { settings } from "../settings/settings";
 
 const Group: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -19,6 +23,8 @@ const Group: React.FC = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState<number | null>(
     null
   );
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
 
   const {
     data: groupData,
@@ -64,6 +70,7 @@ const Group: React.FC = () => {
 
   const handleDeleteTransaction = (transactionId: number) => {
     setDeleteConfirmation(transactionId);
+    setSelectedTransaction(null);
   };
 
   const confirmDelete = () => {
@@ -80,8 +87,14 @@ const Group: React.FC = () => {
     setDeleteConfirmation(null);
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !groupData) return <div>Error loading group data</div>;
+  const getUserColor = (userId: string) => {
+    const userIndex =
+      groupData?.users.findIndex((user) => user.id === userId) ?? 0;
+    return settings.userColors[userIndex % settings.userColors.length];
+  };
+
+  if (isLoading) return <Loading />;
+  if (error || !groupData) return <GroupNotFound />;
 
   return (
     <GroupLayout groupId={groupId!} groupName={groupData.name}>
@@ -95,31 +108,38 @@ const Group: React.FC = () => {
         {groupData.transactions.map((transaction) => (
           <div
             key={transaction.id}
-            className="border border-primary-text p-2 mb-2 rounded flex justify-between items-center"
+            className="border-primary-text p-2 mb-2 rounded transition-colors duration-200 cursor-pointer flex items-center"
+            onClick={() => setSelectedTransaction(transaction)}
           >
-            <div>
-              <p>
-                {transaction.amount} {transaction.currency} -{" "}
-                {transaction.message}
-              </p>
-              <p>
-                By:{" "}
-                {groupData.users.find((u) => u.id === transaction.userId)?.name}{" "}
-                at {new Date(transaction.datetime).toLocaleString()}
-              </p>
+            <div
+              className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
+              style={{ backgroundColor: getUserColor(transaction.userId) }}
+            ></div>
+            <div className="flex justify-between items-center flex-grow">
+              <p className="font-normal">{transaction.message}</p>
+              <div className="text-sm text-white flex justify-between items-center">
+                <p className="font-bold text-xl pr-4">
+                  {transaction.amount} {transaction.currency}
+                </p>
+              </div>
             </div>
-            <Button
-              variant="secondary"
-              onClick={() => handleDeleteTransaction(transaction.id)}
-            >
-              Delete
-            </Button>
           </div>
         ))}
       </div>
 
       {deleteConfirmation && (
         <DeleteConfirmation onConfirm={confirmDelete} onCancel={cancelDelete} />
+      )}
+
+      {selectedTransaction && (
+        <TransactionDetails
+          transaction={selectedTransaction}
+          user={groupData.users.find(
+            (u) => u.id === selectedTransaction.userId
+          )}
+          onClose={() => setSelectedTransaction(null)}
+          onDelete={handleDeleteTransaction}
+        />
       )}
     </GroupLayout>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveGroup, getRecentGroups } from "../utils/storage";
 import Button from "./Button";
+import logo from "../assets/logo.png"; // Import the logo
 
 const Home: React.FC = () => {
   const [newGroupName, setNewGroupName] = useState("");
@@ -34,7 +35,7 @@ const Home: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-center mb-8">
-        <img src="./logo.png" alt="Bill Splitter Logo" className="h-32" />
+        <img src={logo} alt="Bill Splitter Logo" className="h-32" />
       </div>
       <form onSubmit={handleCreateGroup} className="space-y-4 mb-8">
         <input

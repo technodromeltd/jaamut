@@ -7,10 +7,15 @@ import {
   convertCurrency,
   getSupportedCurrencies,
 } from "../utils/currencyConversion";
+import Loading from "./Loading";
+import GroupNotFound from "./GroupNotFound";
+import { settings } from "../settings/settings";
 
 const GroupScore: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
-  const [selectedCurrency, setSelectedCurrency] = useState("EUR");
+  const [selectedCurrency, setSelectedCurrency] = useState(
+    settings.defaultCurrency
+  );
   const supportedCurrencies = getSupportedCurrencies();
 
   const {
@@ -19,8 +24,8 @@ const GroupScore: React.FC = () => {
     error,
   } = useQuery<GroupData | null>(["group", groupId], () => getGroup(groupId!));
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !groupData) return <div>Error loading group data</div>;
+  if (isLoading) return <Loading />;
+  if (error || !groupData) return <GroupNotFound />;
 
   const calculateBalances = () => {
     const balances: { [userId: string]: number } = {};
@@ -105,15 +110,23 @@ const GroupScore: React.FC = () => {
         <h3 className="text-xl font-semibold pb-2">
           Total Spent: {selectedCurrency} {totalSpent}
         </h3>
-        {groupData.users.map((user) => (
-          <p
-            key={user.id}
-            className="mb-4 p-2 bg-gray-100 rounded text-primary-button"
-          >
-            <span className="font-medium">{user.name}:</span> {selectedCurrency}{" "}
-            {balances[user.id].toFixed(2)}
-          </p>
-        ))}
+        {groupData.users.map((user, index) => {
+          const userColor =
+            settings.userColors[index % settings.userColors.length];
+          return (
+            <p
+              key={user.id}
+              className="mb-4 p-2 bg-gray-100 rounded text-primary-button flex items-center"
+            >
+              <div
+                className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
+                style={{ backgroundColor: userColor }}
+              ></div>
+              <span className="font-medium">{user.name}:</span>{" "}
+              {selectedCurrency} {balances[user.id].toFixed(2)}
+            </p>
+          );
+        })}
       </div>
       <div className="mt-6">
         <h3 className="text-xl font-semibold mb-3">Settlements</h3>

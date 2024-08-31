@@ -4,6 +4,7 @@ import { User } from "../utils/storage";
 import GroupLayout from "./GroupLayout";
 import Button from "./Button";
 import { FaUser } from "react-icons/fa";
+import { settings } from "../settings/settings";
 interface GroupSettingsProps {
   users: User[];
   onAddUser: (user: User) => void;
@@ -34,7 +35,26 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
     <GroupLayout groupId={groupId!} groupName={groupName}>
       <div className="mb-4">
         <h2 className="text-xl font-semibold mb-2">Users</h2>
-        <form onSubmit={handleAddUser} className="flex mb-2">
+
+        <ul className="space-y-2">
+          {users.map((user, index) => {
+            const userColor =
+              settings.userColors[index % settings.userColors.length];
+            return (
+              <li
+                key={user.id}
+                className="flex items-center p-2 bg-gray-100 rounded"
+              >
+                <div
+                  className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
+                  style={{ backgroundColor: userColor }}
+                ></div>
+                <span className="text-primary-button">{user.name}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <form onSubmit={handleAddUser} className="flex mt-4">
           <input
             type="text"
             value={newUser}
@@ -46,18 +66,6 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
             Add User
           </Button>
         </form>
-        <ul className="space-y-2">
-          {users.map((user) => (
-            <li
-              key={user.id}
-              className="flex items-center p-2 bg-gray-100 rounded"
-            >
-              {/* Replace FaUser with a simple user icon or import it if needed */}
-              <FaUser className="mr-2 text-gray-600" />
-              <span className="text-primary-button">{user.name}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </GroupLayout>
   );

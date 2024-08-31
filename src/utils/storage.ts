@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3001";
+const API_URL =
+  process.env.NODE_ENV === "production" ? "/api" : "http://localhost:3000/api";
+
 const RECENT_GROUPS_KEY = "recentGroups";
 
 export interface User {
@@ -41,11 +43,12 @@ export const saveGroup = async (
 ): Promise<string> => {
   const groupId = generateGroupId(groupData.name);
   try {
-    await axios.post(`${API_URL}/groups`, {
+    const newGroup = {
       ...groupData,
       id: groupId,
       lastAccessed: Date.now(),
-    });
+    };
+    await axios.post(`${API_URL}/groups`, newGroup);
     addRecentGroup(groupId, groupData.name);
     return groupId;
   } catch (error) {
@@ -59,11 +62,12 @@ export const updateGroup = async (
   groupData: Omit<GroupData, "id">
 ): Promise<void> => {
   try {
-    await axios.put(`${API_URL}/groups/${groupId}`, {
+    const updatedGroup = {
       ...groupData,
       id: groupId,
       lastAccessed: Date.now(),
-    });
+    };
+    await axios.post(`${API_URL}/groups`, updatedGroup);
     addRecentGroup(groupId, groupData.name);
   } catch (error) {
     console.error("Error updating group:", error);
@@ -73,15 +77,14 @@ export const updateGroup = async (
 
 export const getGroup = async (groupId: string): Promise<GroupData | null> => {
   try {
-    const response = await axios.get(`${API_URL}/groups/${groupId}`);
-    if (response.data) {
-      addRecentGroup(groupId, response.data.users[0]?.name || "Unnamed Group");
+    const response = await axios.get(`${API_URL}/groups`);
+    const groups = response.data;
+    const group = groups.find((g: GroupData) => g.id === groupId);
+    if (group) {
+      addRecentGroup(groupId, group.name);
     }
-    return response.data || null;
+    return group || null;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 404) {
-      return null;
-    }
     console.error("Error getting group:", error);
     throw error;
   }

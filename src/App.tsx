@@ -6,6 +6,8 @@ import GroupSettings from "./components/GroupSettings";
 import GroupScore from "./components/GroupScore";
 import { getGroup, updateGroup, User, GroupData } from "./utils/storage";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import Loading from "./components/Loading";
+import GroupNotFound from "./components/GroupNotFound";
 
 const GroupSettingsWrapper: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -32,8 +34,8 @@ const GroupSettingsWrapper: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!groupData) return <div>Group not found</div>;
+  if (isLoading) return <Loading />;
+  if (!groupData) return <GroupNotFound />;
 
   return (
     <GroupSettings

@@ -1,0 +1,76 @@
+{
+  "groups": [
+    {
+      "id": "test",
+      "users": [
+        {
+          "id": "1725093374817lkc74isfe",
+          "name": "test"
+        },
+        {
+          "id": "1725093387137",
+          "name": "eero"
+        }
+      ],
+      "transactions": [
+        {
+          "id": 1725093862657,
+          "amount": 123,
+          "currency": "EUR",
+          "message": "tee",
+          "userId": "1725093387137",
+          "datetime": "2024-08-31T08:44:22.657Z"
+        }
+      ],
+      "lastAccessed": 1725094641138
+    },
+    {
+      "users": [
+        {
+          "id": "1725097116111y7aj5mixc",
+          "name": "a"
+        },
+        {
+          "id": "1725097116111ndukkkv93",
+          "name": "b"
+        },
+        {
+          "id": "1725097116111giswv5v5w",
+          "name": "c"
+        },
+        {
+          "id": "172509711611116fbsb1hc",
+          "name": "d"
+        }
+      ],
+      "transactions": [],
+      "lastAccessed": 1725097116111,
+      "id": "Korea 2024"
+    },
+    {
+      "id": "korea2024_1725097376171",
+      "name": "Korea 2024",
+      "users": [
+        {
+          "id": "17250973761709nnw6xz77",
+          "name": "Eero"
+        },
+        {
+          "id": "17250973761706y05g2kek",
+          "name": "Teemu"
+        }
+      ],
+      "transactions": [
+        {
+          "id": 1725097389429,
+          "amount": 123,
+          "currency": "USD",
+          "message": "asd",
+          "userId": "17250973761709nnw6xz77",
+          "datetime": "2024-08-31T09:43:09.429Z"
+        }
+      ],
+      "lastAccessed": 1725097389434
+    }
+  ]
+}

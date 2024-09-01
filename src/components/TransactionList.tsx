@@ -28,17 +28,17 @@ const TransactionList: React.FC = () => {
   );
   const { groupId } = useParams<{ groupId: string }>();
 
-  const {
-    data: groupData,
-    isLoading,
-    error,
-  } = useQuery(["group", groupId], () => getGroup(groupId!), {
-    onSuccess: (data) => {
-      if (data) {
-        addRecentGroup(data.id, data.name);
-      }
-    },
-  });
+  const { data: groupData } = useQuery(
+    ["group", groupId],
+    () => getGroup(groupId!),
+    {
+      onSuccess: (data) => {
+        if (data) {
+          addRecentGroup(data.id, data.name);
+        }
+      },
+    }
+  );
   const [deleteConfirmation, setDeleteConfirmation] = useState<number | null>(
     null
   );
@@ -118,24 +118,27 @@ const TransactionList: React.FC = () => {
   return (
     <GroupLayout groupId={groupId!} groupName={groupData?.name ?? ""}>
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">{`Transactions (${groupData?.transactions.length})`}</h2>
+        <h1>{`Transactions (${groupData?.transactions.length})`}</h1>
+        <p>List of all transactions in the group by date.</p>
         {transactionsGroupedByDate &&
           Object.entries(transactionsGroupedByDate).map(
             ([date, { transactions, totalSum }]) => (
               <div key={date}>
-                <h3 className="text-lg font-semibold mb-2">
+                <h3>
                   {new Date(date).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                   })}
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     Total spent:{" "}
-                    {
-                      dateSums?.find((dateSum) => dateSum.date === date)
-                        ?.totalSum
-                    }{" "}
-                    EUR
+                    <b>
+                      {
+                        dateSums?.find((dateSum) => dateSum.date === date)
+                          ?.totalSum
+                      }{" "}
+                      EUR
+                    </b>
                   </p>
                 </h3>
                 {transactions.map((transaction) => (

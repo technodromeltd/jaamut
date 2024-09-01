@@ -4,7 +4,6 @@ import { User } from "../utils/storage";
 import GroupLayout from "./GroupLayout";
 import Button from "./Button";
 import { settings } from "../settings/settings";
-import { FaShare } from "react-icons/fa";
 import Toast from "./Toast";
 
 interface GroupSettingsProps {
@@ -74,8 +73,9 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
   return (
     <GroupLayout groupId={groupId!} groupName={groupName}>
       <div className="mb-4">
-        <h1 className="text-2xl font-bold my-2">Group Settings</h1>
-        <h2 className="text-xl font-semibold my-2">Users</h2>
+        <h1>Group Settings</h1>
+        <p>You can add users to the group and share the group with others.</p>
+        <h2>Users</h2>
 
         <ul className="space-y-4">
           {users.map((user, index) => {
@@ -95,8 +95,8 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
             );
           })}
         </ul>
-        <h2 className="text-xl font-semibold my-2">Add User</h2>
-        <form onSubmit={handleAddUser} className="flex mt-4">
+        <h2>Add User</h2>
+        <form onSubmit={handleAddUser} className="flex">
           <input
             type="text"
             value={newUser}
@@ -109,8 +109,8 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
           </Button>
         </form>
 
-        <h2 className="text-xl font-semibold my-2">Share Group</h2>
-        <div className="my-4 flex flex-col gap-4">
+        <h2>Share Group</h2>
+        <div className="flex flex-col gap-4">
           <Button onClick={handleShareGroup} variant="secondary">
             Share link to the group
           </Button>

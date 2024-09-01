@@ -3,20 +3,17 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { getGroup, GroupData } from "../utils/storage";
 import GroupLayout from "./GroupLayout";
-import {
-  convertCurrency,
-  getSupportedCurrencies,
-} from "../utils/currencyConversion";
+import { convertCurrency } from "../utils/currencyConversion";
 import Loading from "./Loading";
 import GroupNotFound from "./GroupNotFound";
 import { settings } from "../settings/settings";
+import CurrencySelector from "./CurrencySelector";
 
 const GroupScore: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const [selectedCurrency, setSelectedCurrency] = useState(
     settings.defaultCurrency
   );
-  const supportedCurrencies = getSupportedCurrencies();
 
   const {
     data: groupData,
@@ -88,23 +85,16 @@ const GroupScore: React.FC = () => {
 
   return (
     <GroupLayout groupId={groupId!} groupName={groupData.name}>
-      <h1 className="text-2xl font-bold mb-4">Score</h1>
+      <h1>Score</h1>
+      <p className="mb-4">
+        Calculates the total amount spent by each user and shows the settlements
+        needed to balance the group.
+      </p>
       <div className="mb-4">
-        <label htmlFor="currency-select" className="mr-2">
-          Select Currency:
-        </label>
-        <select
-          id="currency-select"
-          value={selectedCurrency}
-          onChange={(e) => setSelectedCurrency(e.target.value)}
-          className="p-2 border rounded"
-        >
-          {supportedCurrencies.map((currency) => (
-            <option key={currency} value={currency}>
-              {currency}
-            </option>
-          ))}
-        </select>
+        <CurrencySelector
+          selectedCurrency={selectedCurrency}
+          onCurrencyChange={setSelectedCurrency}
+        />
       </div>
       <div className="mb-4">
         <h3 className="text-xl font-semibold pb-2">
@@ -116,7 +106,7 @@ const GroupScore: React.FC = () => {
           return (
             <p
               key={user.id}
-              className="mb-4 p-2 bg-gray-100 rounded text-primary-button flex items-center"
+              className="mb-4 p-2 bg-gray-100 rounded text-secondary-text flex items-center"
             >
               <div
                 className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
@@ -133,7 +123,7 @@ const GroupScore: React.FC = () => {
         {settlements.map((settlement, index) => (
           <p
             key={index}
-            className="mb-4 p-2 bg-gray-100 rounded text-primary-button"
+            className="mb-4 p-2 bg-gray-100 rounded text-secondary-text"
           >
             <span className="font-medium">{settlement.from}</span> pays{" "}
             <span className="font-medium">{settlement.to}</span>:{" "}

@@ -30,3 +30,24 @@ select {
   background-color: theme("colors.primary-bg");
   color: theme("colors.primary-text");
 }
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  color: theme("colors.primary-text");
+}
+
+h2 {
+  font-size: 1.3rem;
+  color: #e6dfdf;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: #e6dfdf;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+}

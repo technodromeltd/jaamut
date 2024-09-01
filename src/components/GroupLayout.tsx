@@ -49,7 +49,10 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
     onSwiped: (eventData) => console.log("User Swiped!", eventData),
   });
   return (
-    <div className="container mx-auto p-4 h-full" {...handlers}>
+    <div
+      className="container mx-auto p-4 h-full overflow-x-hidden"
+      {...handlers}
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-primary-text">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -72,6 +75,14 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
         >
           <Link
             to={`/groups/${groupId}`}
+            className="block sm:inline-block mb-2 sm:mb-0 sm:mr-2"
+          >
+            <Button variant="secondary" fullWidth>
+              Add Transaction
+            </Button>
+          </Link>
+          <Link
+            to={`/groups/${groupId}/transactions`}
             className="block sm:inline-block mb-2 sm:mb-0 sm:mr-2"
           >
             <Button variant="secondary" fullWidth>

@@ -9,6 +9,7 @@ module.exports = {
         "primary-button": "#95A3A4", // Bright blue
         "secondary-button": "#697268", // Green
         "danger-button": "#ef4444", // Red
+        "secondary-text": "#4E5340", // Bright blue
       },
       screens: {
         sm: "640px",

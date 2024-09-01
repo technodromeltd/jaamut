@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CurrencySelector from "./CurrencySelector";
 import { User } from "../utils/storage";
 import { settings } from "../settings/settings";
 import Toast from "./Toast";
-import { Link } from "react-router-dom";
 import Button from "./Button";
 
 interface TransactionInputProps {
@@ -26,6 +25,13 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
   const [userId, setUserId] = useState("");
   const [showToast, setShowToast] = useState(false);
 
+  useEffect(() => {
+    const savedUserId = localStorage.getItem("lastSelectedUserId");
+    if (savedUserId) {
+      setUserId(savedUserId);
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (amount && currency && userId) {
@@ -33,6 +39,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
       setAmount("");
       setMessage("");
       setShowToast(true);
+      localStorage.setItem("lastSelectedUserId", userId);
     }
   };
 
@@ -43,19 +50,23 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4 ">
-        <div className="flex flex-col justify-center items-center align-middle gap-5">
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Amount"
-            className="p-2 border rounded  border-none w-fit text-center text-6xl focus:outline-none"
-            required
-          />
-          <CurrencySelector
-            selectedCurrency={currency}
-            onCurrencyChange={setCurrency}
-          />
+        <div className="flex  w-full flex-col justify-center items-center align-middle gap-8 pt-8">
+          <div className="flex flex-col justify-center items-center align-middle gap-0 w-full">
+            <CurrencySelector
+              selectedCurrency={currency}
+              onCurrencyChange={setCurrency}
+              className="border-none text-2xl appearance-none mb-0 pb-0"
+            />
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0"
+              min="0"
+              className="p-0 border-none text-6xl focus:outline-none w-fit text-center m-0"
+              required
+            />
+          </div>
           <input
             type="text"
             value={message}
@@ -85,10 +96,10 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
               );
             })}
           </div>
+          <Button isSubmit variant="primary" fullWidth>
+            Add Transaction
+          </Button>
         </div>
-        <Button isSubmit variant="primary" fullWidth>
-          Add Transaction
-        </Button>
       </form>
       {showToast && (
         <Toast

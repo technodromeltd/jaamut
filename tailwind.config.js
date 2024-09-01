@@ -6,8 +6,8 @@ module.exports = {
       colors: {
         "primary-bg": "#4E5340", // Dark blue
         "primary-text": "#ffffff", // White
-        "primary-button": "#697268", // Bright blue
-        "secondary-button": "#95A3A4", // Green
+        "primary-button": "#95A3A4", // Bright blue
+        "secondary-button": "#697268", // Green
         "danger-button": "#ef4444", // Red
       },
       screens: {

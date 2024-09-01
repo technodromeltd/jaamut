@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import Button from "./Button";
 import { HiArrowLeft } from "react-icons/hi"; // Import the icon
+import { useSwipeable } from "react-swipeable";
 
 interface GroupLayoutProps {
   groupId: string;
@@ -14,18 +15,41 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
   groupName,
   children,
 }) => {
+  const groupLinksArray = [
+    `/groups/${groupId}`,
+    `/groups/${groupId}/transactions`,
+    `/groups/${groupId}/score`,
+    `/groups/${groupId}/settings`,
+  ];
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const currentPath = useLocation().pathname;
+  const [currentIndex, setCurrentIndex] = useState(
+    groupLinksArray.indexOf(currentPath)
+  );
   const groupPath = `/groups/${groupId}`;
   const isSubPath =
     currentPath.startsWith(groupPath) && currentPath !== groupPath;
 
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      const nextIndex = (currentIndex + 1) % groupLinksArray.length;
+      setCurrentIndex(nextIndex);
+      navigate(groupLinksArray[nextIndex]);
+    },
+    onSwipedRight: () => {
+      const prevIndex =
+        (currentIndex - 1 + groupLinksArray.length) % groupLinksArray.length;
+      setCurrentIndex(prevIndex);
+      navigate(groupLinksArray[prevIndex]);
+    },
+    onSwiped: (eventData) => console.log("User Swiped!", eventData),
+  });
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 h-full" {...handlers}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-primary-text">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -55,7 +79,7 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
             </Button>
           </Link>
           <Link
-            to={`/groups/${groupId}/settle`}
+            to={`/groups/${groupId}/score`}
             className="block sm:inline-block mb-2 sm:mb-0 sm:mr-2"
           >
             <Button variant="secondary" fullWidth>

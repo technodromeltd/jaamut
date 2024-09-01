@@ -88,7 +88,7 @@ const GroupScore: React.FC = () => {
 
   return (
     <GroupLayout groupId={groupId!} groupName={groupData.name}>
-      <h2 className="text-2xl font-bold mb-4">Score</h2>
+      <h1 className="text-2xl font-bold mb-4">Score</h1>
       <div className="mb-4">
         <label htmlFor="currency-select" className="mr-2">
           Select Currency:

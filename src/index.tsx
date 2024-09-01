@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import { QueryClient, QueryClientProvider } from "react-query";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -15,13 +16,15 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Provider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Provider store={store}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </Provider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

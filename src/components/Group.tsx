@@ -4,7 +4,7 @@ import TransactionInput from "./TransactionInput";
 import GroupLayout from "./GroupLayout";
 import DeleteConfirmation from "./DeleteConfirmation";
 import TransactionDetails from "./TransactionDetails";
-import Button from "./Button";
+
 import {
   Transaction,
   updateGroup,
@@ -68,31 +68,6 @@ const Group: React.FC = () => {
     }
   };
 
-  const handleDeleteTransaction = (transactionId: number) => {
-    setDeleteConfirmation(transactionId);
-    setSelectedTransaction(null);
-  };
-
-  const confirmDelete = () => {
-    if (groupData && deleteConfirmation) {
-      const newTransactions = groupData.transactions.filter(
-        (t) => t.id !== deleteConfirmation
-      );
-      mutation.mutate({ ...groupData, transactions: newTransactions });
-      setDeleteConfirmation(null);
-    }
-  };
-
-  const cancelDelete = () => {
-    setDeleteConfirmation(null);
-  };
-
-  const getUserColor = (userId: string) => {
-    const userIndex =
-      groupData?.users.findIndex((user) => user.id === userId) ?? 0;
-    return settings.userColors[userIndex % settings.userColors.length];
-  };
-
   if (isLoading) return <Loading />;
   if (error || !groupData) return <GroupNotFound />;
 
@@ -103,7 +78,7 @@ const Group: React.FC = () => {
         users={groupData.users}
       />
 
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <h2 className="text-xl font-semibold mb-2">Transactions</h2>
         {groupData.transactions.map((transaction) => (
           <div
@@ -140,7 +115,7 @@ const Group: React.FC = () => {
           onClose={() => setSelectedTransaction(null)}
           onDelete={handleDeleteTransaction}
         />
-      )}
+      )} */}
     </GroupLayout>
   );
 };

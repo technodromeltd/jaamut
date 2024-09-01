@@ -7,6 +7,7 @@ import logo from "../assets/logo.png"; // Import the logo
 const Home: React.FC = () => {
   const [newGroupName, setNewGroupName] = useState("");
   const [initialUsers, setInitialUsers] = useState("");
+  const [joinGroupName, setJoinGroupName] = useState("");
   const [recentGroups, setRecentGroups] = useState<
     { id: string; name: string }[]
   >([]);
@@ -32,11 +33,31 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleJoinGroup = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/groups/${joinGroupName}`);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-center mb-8">
         <img src={logo} alt="Bill Splitter Logo" className="h-32" />
       </div>
+      <form onSubmit={handleJoinGroup} className="space-y-4 mb-8">
+        <input
+          type="text"
+          value={joinGroupName}
+          onChange={(e) => setJoinGroupName(e.target.value)}
+          placeholder="Enter group code"
+          className="p-2 border rounded w-full bg-white text-primary-bg"
+          required
+        />
+
+        <Button type="submit" variant="primary" fullWidth>
+          Join Group
+        </Button>
+      </form>
+      <h2 className="text-xl font-semibold mb-2">Create a new group</h2>
       <form onSubmit={handleCreateGroup} className="space-y-4 mb-8">
         <input
           type="text"

@@ -8,6 +8,7 @@ import { getGroup, updateGroup, User, GroupData } from "./utils/storage";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import Loading from "./components/Loading";
 import GroupNotFound from "./components/GroupNotFound";
+import TransactionList from "./components/TransactionList";
 
 const GroupSettingsWrapper: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -56,7 +57,11 @@ const App: React.FC = () => {
           path="/groups/:groupId/settings"
           element={<GroupSettingsWrapper />}
         />
-        <Route path="/groups/:groupId/settle" element={<GroupScore />} />
+        <Route path="/groups/:groupId/score" element={<GroupScore />} />
+        <Route
+          path="/groups/:groupId/transactions"
+          element={<TransactionList />}
+        />
       </Routes>
     </div>
   );

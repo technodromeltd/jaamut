@@ -45,8 +45,8 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
     if (navigator.share) {
       navigator
         .share({
-          title: `Join ${groupName} on Jaamut App`,
-          text: `Join our group "${groupName}" on Jaamut to easily split the travel expenses!`,
+          title: `Join ${groupName} on WanderWallet`,
+          text: `Join "${groupName}" on WanderWallet to easily split the travel expenses!`,
           url: groupLink,
         })
         .catch(console.error);
@@ -95,13 +95,13 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
           return (
             <li
               key={user.id}
-              className="flex items-center p-2 bg-gray-100 rounded"
+              className="flex items-center p-2 bg-secondary-button rounded"
             >
               <div
                 className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
                 style={{ backgroundColor: userColor }}
               ></div>
-              <span className="text-primary-button">{user.name}</span>
+              <span className="text-primary-text">{user.name}</span>
             </li>
           );
         })}
@@ -116,7 +116,7 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
           placeholder="Enter user name"
           className="p-2 border rounded flex-grow mr-2"
         />
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" className="px-6">
           Add
         </Button>
       </form>

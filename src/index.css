@@ -39,6 +39,7 @@ input[type="number"],
 select {
   /* background-color: theme("colors.primary-bg"); */
   background: none;
+  background: #8fabb1;
   /* border: none; */
   color: theme("colors.primary-text");
   /* placeholder color */

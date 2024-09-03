@@ -110,9 +110,9 @@ const GroupScore: React.FC = () => {
           return (
             <div
               key={user.id}
-              className="mb-4 p-2  rounded text-secondary-text flex items-center"
+              className="mb-4  rounded text-secondary-text flex items-center"
             >
-              <div className="flex justify-between w-full">
+              <div className="flex  justify-between  items-center p-2 bg-secondary-button rounded w-full">
                 <div className="flex items-center">
                   <div
                     className="w-4 h-4 rounded-full mr-3 flex-shrink-0"

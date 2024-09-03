@@ -141,7 +141,7 @@ const TransactionList: React.FC = () => {
               {transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="border-primary-text p-2 mb-2 rounded transition-colors duration-200 cursor-pointer flex items-center"
+                  className="border-primary-text p-2 mb-2 rounded transition-colors duration-200 cursor-pointer flex items-center bg-secondary-button"
                   onClick={() => setSelectedTransaction(transaction)}
                 >
                   <CategoryIcon
@@ -150,16 +150,16 @@ const TransactionList: React.FC = () => {
                   />
 
                   <div className="flex justify-between items-center flex-grow">
-                    <p className="font-normal">
+                    <span className="font-normal">
                       {transaction.message.length > 20
                         ? `${transaction.message.slice(0, 20)}...`
                         : transaction.message || "Unknown"}
-                    </p>
+                    </span>
                     <div className="text-sm text-white flex justify-between items-center">
-                      <p className="font-bold text-xl pr-4">
+                      <span className="font-bold text-xl pr-4">
                         {transaction.amount.toLocaleString()}{" "}
                         {transaction.currency}
-                      </p>
+                      </span>
                     </div>
                   </div>
                 </div>

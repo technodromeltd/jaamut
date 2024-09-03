@@ -1,6 +1,7 @@
 {
   "short_name": "WanderWallet",
-  "name": "WanderWallet",
+  "name": "Wander Wallet",
+  "description": "Wander Wallet - Travel Expense Tracker",
   "icons": [
     {
       "src": "favicon.ico",

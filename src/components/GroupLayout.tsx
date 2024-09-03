@@ -54,15 +54,15 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
             <Link to="/">
               <img
                 src={logoSmall}
-                alt="Bill Splitter Logo"
-                className="h-10 mr-2  rounded-md"
+                alt="WanderWallet Logo"
+                className="h-10 mr-2 p-1 rounded-md bg-[#7694A2]"
               />
             </Link>
             <h1>{groupName}</h1>
           </div>
           <span
             onClick={toggleMenu}
-            className="sm:hidden text-4xl cursor-pointer flex items-center mt-[-0.5rem]" // Added flex and items-center for vertical alignment
+            className="sm:hidden text-2xl cursor-pointer flex items-center mt-[-0.5rem]" // Added flex and items-center for vertical alignment
           >
             {isMenuOpen ? "✕" : "☰"}
           </span>

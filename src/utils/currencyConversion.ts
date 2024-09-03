@@ -13,11 +13,11 @@ export const convertCurrency = (
   toCurrency: Currency
 ): number => {
   if (fromCurrency === toCurrency) return amount;
-  console.log(fromCurrency, toCurrency);
   const fromRate = exchangeRates[fromCurrency];
   const toRate = exchangeRates[toCurrency];
 
   if (!fromRate || !toRate) {
+    console.error("Invalid currency from to", fromCurrency, toCurrency);
     throw new Error("Invalid currency");
   }
 

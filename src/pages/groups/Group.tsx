@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 import TransactionInput from "../../components/TransactionInput";
 import GroupLayout from "../../components/GroupLayout";
@@ -17,7 +17,8 @@ import TransactionList from "./TransactionList";
 import GroupScore from "./GroupScore";
 import GroupSettings from "./GroupSettings";
 import { Currency } from "../../utils/currencyConversion";
-
+import { usePWAInstall } from "../../hooks/usePWAInstall";
+import logo from "../../assets/logo.png";
 const GroupSettingsWrapper: React.FC<{ groupId: string }> = ({ groupId }) => {
   const queryClient = useQueryClient();
 
@@ -65,13 +66,31 @@ const GroupSettingsWrapper: React.FC<{ groupId: string }> = ({ groupId }) => {
 const Group: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const queryClient = useQueryClient();
+  const { canInstall, handleInstall, setBlocked, blocked } = usePWAInstall();
+  const [hasPrompted, setHasPrompted] = useState(false);
+
+  const handlePromptInstall = () => {
+    if (canInstall && !hasPrompted) {
+      setHasPrompted(true);
+
+      handleInstall(); // Call handleInstall directly in response to user action
+    }
+  };
+
+  const handleBlockInstall = () => {
+    setBlocked();
+  };
+
+  useEffect(() => {
+    console.log("user can install", canInstall);
+  }, [canInstall]);
 
   const {
     data: groupData,
     isLoading,
     error,
   } = useQuery(["group", groupId], () => getGroup(groupId!));
-  console.log(groupData);
+
   const mutation = useMutation(
     (newGroupData: Omit<GroupData, "id">) =>
       updateGroup(groupId!, newGroupData),
@@ -93,29 +112,45 @@ const Group: React.FC = () => {
     }
   };
 
-  if (isLoading) return <Loading />;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-end h-screen">
+        <img src={logo} alt="WanderWallet Logo" className="h-12 mb-6" />
+        <Loading />
+      </div>
+    );
   if (error || !groupData) return <GroupNotFound />;
 
   return (
-    <GroupLayout groupId={groupId!} groupName={groupData.name}>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <TransactionInput
-              onAddTransaction={handleAddTransaction}
-              users={groupData.users}
-            />
-          }
-        />
-        <Route path="/transactions" element={<TransactionList />} />
-        <Route path="/score" element={<GroupScore />} />
-        <Route
-          path="/settings"
-          element={<GroupSettingsWrapper groupId={groupId!} />}
-        />
-      </Routes>
-    </GroupLayout>
+    <>
+      {canInstall && !blocked && (
+        <div className="w-full flex gap-2 justify-between p-2 bg-secondary-button">
+          <button onClick={handlePromptInstall}>Install App</button>
+          <span onClick={handleBlockInstall} className="text-white">
+            X
+          </span>
+        </div>
+      )}
+      <GroupLayout groupId={groupId!} groupName={groupData.name}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <TransactionInput
+                onAddTransaction={handleAddTransaction}
+                users={groupData.users}
+              />
+            }
+          />
+          <Route path="/transactions" element={<TransactionList />} />
+          <Route path="/score" element={<GroupScore />} />
+          <Route
+            path="/settings"
+            element={<GroupSettingsWrapper groupId={groupId!} />}
+          />
+        </Routes>
+      </GroupLayout>
+    </>
   );
 };
 

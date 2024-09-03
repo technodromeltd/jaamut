@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getRecentGroups } from "../utils/storage";
 import Button from "./Button";
 import logo from "../assets/logo.png";
+import ListItem from "./ListItem";
 
 const Home: React.FC = () => {
   const [recentGroups, setRecentGroups] = useState<
@@ -19,10 +20,10 @@ const Home: React.FC = () => {
       <div className="flex justify-center mb-8">
         <img src={logo} alt="Bill Splitter Logo" className="h-24" />
       </div>
-      <p className="mb-8">
-        WANDERWALLET is a travel expense tracker for groups with intelligent
-        receipt scanning for easiest logging and settlement counting for getting
-        even.
+      <p className="mb-8 ">
+        WANDERWALLET is a travel expense tracker designed for groups, featuring
+        intelligent receipt scanning for effortless logging and streamlined
+        settlement calculations.
       </p>
 
       <div className="space-y-4 mb-8">
@@ -48,13 +49,10 @@ const Home: React.FC = () => {
           <ul className="space-y-2">
             {recentGroups.map((group) => (
               <li key={group.id}>
-                <Button
+                <ListItem
+                  leftContent={group.name}
                   onClick={() => navigate(`/groups/${group.id}`)}
-                  variant="secondary"
-                  fullWidth
-                >
-                  {group.name}
-                </Button>
+                />
               </li>
             ))}
           </ul>

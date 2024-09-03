@@ -65,6 +65,8 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
       });
       setShowToast(true);
       localStorage.setItem("lastSelectedUserId", transaction.userId);
+    } else {
+      setErrorMessage("Please fill in all fields");
     }
   };
 
@@ -153,26 +155,27 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null); // Create a ref for the file input
 
   return (
-    <div className="">
+    <div className="flex flex-col gap-4">
       <form onSubmit={handleSubmit} className="">
-        <div className="flex  w-full flex-col justify-center items-center align-middle gap-8 py-8">
+        <div className="flex  w-full flex-col justify-center items-center align-middle gap-6 py-8">
           <div className="flex flex-1 flex-col justify-center items-center align-middle gap-0 w-full">
             <CurrencySelector
               selectedCurrency={transaction.currency}
               onCurrencyChange={handleCurrencyChange}
-              className="border-none text-2xl appearance-none mb-0 pb-0 focus:outline-none"
+              className="border-none text-2xl appearance-none mb-0 pb-0 focus:outline-none rounded-b-none rounded-t-md"
             />
             <input
               type="number"
-              value={transaction.amount}
+              value={Number(transaction.amount).toString()}
               onChange={(e) => handleAmountChange(parseFloat(e.target.value))}
               placeholder="0"
               min="0"
-              className="p-0 border-none text-6xl focus:outline-none w-fit text-center m-0"
+              step="0.01" // Allow decimal values
+              className="p-0 border-none text-6xl focus:outline-none w-fit text-center m-"
               required
             />
             {amountInDefaultCurrency && (
-              <span className="text-sm">
+              <span className="text-sm pt-1">
                 {amountInDefaultCurrency.toFixed(2)} {settings.defaultCurrency}
               </span>
             )}
@@ -202,25 +205,23 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
               </option>
             ))}
           </select>
-          <div className="flex flex-wrap gap-2">
-            {users?.map((user) => {
-              return (
-                <label key={user.id} className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="user"
-                    value={user.id}
-                    checked={transaction.userId === user.id}
-                    onChange={(e) =>
-                      setTransaction({ ...transaction, userId: e.target.value })
-                    }
-                    required
-                  />
-                  <span className="ml-2">{user.name}</span>
-                </label>
-              );
-            })}
-          </div>
+          <select
+            value={transaction.userId}
+            onChange={(e) =>
+              setTransaction({ ...transaction, userId: e.target.value })
+            }
+            className="p-2 border rounded w-full"
+            required
+          >
+            <option value="" disabled>
+              Select user
+            </option>
+            {users?.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </select>
           <div className="flex gap-2 w-full">
             {isLoading ? (
               <div className="flex-1 flex justify-center items-center">
@@ -260,6 +261,10 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
           Save Transaction
         </Button>
       </form>
+      <span>{errorMessage}</span>
+      <span className="text-xs text-center w-full">
+        Swipe left or right to change pages
+      </span>
       {errorMessage && (
         <Toast
           message={errorMessage}

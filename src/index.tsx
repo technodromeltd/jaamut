@@ -9,8 +9,15 @@ import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import { QueryClient, QueryClientProvider } from "react-query";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-const queryClient = new QueryClient();
-
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 60000, // Set global stale time to 1 minute
+      refetchOnWindowFocus: false, // Prevent refetching on window focus
+    },
+  },
+});
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );

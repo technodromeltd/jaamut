@@ -25,7 +25,7 @@ const GroupScore: React.FC = () => {
 
   // Update selectedCurrency when groupData changes
   useEffect(() => {
-    if (groupData) {
+    if (groupData && groupData.defaultCurrency) {
       setSelectedCurrency(groupData.defaultCurrency);
     }
   }, [groupData]);

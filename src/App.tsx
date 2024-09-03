@@ -6,17 +6,24 @@ import JoinGroup from "./pages/groups/JoinGroup";
 import CreateGroup from "./pages/groups/CreateGroup";
 import SplashScreen from "./components/SplashScreen";
 
-const SHOW_SPLASH = true;
 const App: React.FC = () => {
-  const [loading, setLoading] = useState(SHOW_SPLASH);
+  const [loading, setLoading] = useState(() => {
+    const hasSeenSplash = localStorage.getItem("hasSeenSplash");
+    return !hasSeenSplash;
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 3000); // Set loading to false after 2 seconds
-    return () => clearTimeout(timer); // Cleanup timer
-  }, []);
+    if (loading) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+        localStorage.setItem("hasSeenSplash", "true");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   if (loading) {
-    return <SplashScreen />; // Show SplashScreen while loading
+    return <SplashScreen />;
   }
 
   return (

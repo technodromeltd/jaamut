@@ -22,10 +22,7 @@ const Button: React.FC<ButtonProps> = ({
     secondary:
       "border border-solid border-white hover:bg-opacity-80 text-white active:bg-secondary-button active:bg-secondary-button-active",
   };
-  const OLD_variantClasses = {
-    primary: "bg-primary-button hover:bg-[#626B61] text-white",
-    secondary: "bg-secondary-button hover:bg-[#7A8687] text-white ",
-  };
+
   const widthClass = fullWidth ? "w-full" : "";
 
   return (

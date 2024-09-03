@@ -42,6 +42,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
     if (savedUserId) {
       setTransaction({ ...transaction, userId: savedUserId });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

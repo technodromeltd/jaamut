@@ -17,30 +17,50 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: theme("colors.primary-bg");
   color: theme("colors.primary-text");
+  /* background-image: url("./assets/splitz-bg.webp"); */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background: linear-gradient(135deg, #628396, #a8c1c1);
 }
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
+input::placeholder {
+  color: theme("colors.primary-text");
+  opacity: 0.7; /* Firefox */
+}
+input:focus {
+  outline: none;
+}
 input[type="text"],
 input[type="number"],
 select {
-  background-color: theme("colors.primary-bg");
+  /* background-color: theme("colors.primary-bg"); */
+  background: none;
+  /* border: none; */
   color: theme("colors.primary-text");
+  /* placeholder color */
+  /* ::placeholder {
+    color: theme("colors.primary-text");
+  } */
 }
-
+p {
+  margin-bottom: 0.5rem;
+}
 h1 {
   font-size: 1.5rem;
   font-weight: 600;
+  padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   color: theme("colors.primary-text");
 }
 
 h2 {
-  font-size: 1.3rem;
-  color: #e6dfdf;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #efebeb;
   padding-bottom: 0.5rem;
   padding-top: 0.5rem;
 }

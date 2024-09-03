@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Transaction, User } from "../utils/storage";
 import {
   convertCurrency,
+  Currency,
   getSupportedCurrencies,
 } from "../utils/currencyConversion";
 
@@ -11,7 +12,7 @@ interface GroupStatusProps {
 }
 
 const GroupStatus: React.FC<GroupStatusProps> = ({ transactions, users }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState("EUR");
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>("EUR");
   const supportedCurrencies = getSupportedCurrencies();
 
   const calculateBalances = () => {
@@ -80,7 +81,7 @@ const GroupStatus: React.FC<GroupStatusProps> = ({ transactions, users }) => {
         <select
           id="currency-select"
           value={selectedCurrency}
-          onChange={(e) => setSelectedCurrency(e.target.value)}
+          onChange={(e) => setSelectedCurrency(e.target.value as Currency)}
           className="p-2 border rounded"
         >
           {supportedCurrencies.map((currency) => (

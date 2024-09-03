@@ -1,6 +1,6 @@
 {
-  "short_name": "Jaamut",
-  "name": "Jaamut - Bill Splitter",
+  "short_name": "WanderWallet",
+  "name": "WanderWallet",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#4E5340",
-  "background_color": "#4E5340"
+  "theme_color": "#b1cac7ff",
+  "background_color": "#b1cac7ff"
 }

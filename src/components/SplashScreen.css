@@ -1,0 +1,25 @@
+@keyframes zoomOut {
+  0% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.zoom-out {
+  animation: zoomOut 3s ease forwards; /* Adjust duration and easing as needed */
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translate(-50%, 550%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, 220%) scale(1.2);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 2s ease-out forwards;
+}

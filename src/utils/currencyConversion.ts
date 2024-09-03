@@ -5,13 +5,15 @@ const exchangeRates: { [key: string]: number } = {
   KRW: 1337,
 };
 
+export type Currency = "USD" | "EUR" | "KRW";
+
 export const convertCurrency = (
   amount: number,
-  fromCurrency: string,
-  toCurrency: string
+  fromCurrency: Currency,
+  toCurrency: Currency
 ): number => {
   if (fromCurrency === toCurrency) return amount;
-
+  console.log(fromCurrency, toCurrency);
   const fromRate = exchangeRates[fromCurrency];
   const toRate = exchangeRates[toCurrency];
 
@@ -22,6 +24,6 @@ export const convertCurrency = (
   return (amount / fromRate) * toRate;
 };
 
-export const getSupportedCurrencies = (): string[] => {
-  return Object.keys(exchangeRates);
+export const getSupportedCurrencies = (): Currency[] => {
+  return Object.keys(exchangeRates) as Currency[];
 };

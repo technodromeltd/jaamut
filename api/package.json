@@ -4,7 +4,13 @@
   "description": "API for Splitter PWA",
   "main": "groups.ts",
   "dependencies": {
+    "@types/formidable": "^3.4.5",
     "@vercel/kv": "^0.2.0",
-    "@vercel/node": "^3.2.10"
+    "@vercel/node": "^3.2.10",
+    "formidable": "^3.5.1",
+    "openai": "^4.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.2"
   }
 }

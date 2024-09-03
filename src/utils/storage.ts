@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Currency } from "./currencyConversion";
 
 const API_URL =
   process.env.NODE_ENV === "production" ? "/api" : "http://localhost:3000/api";
@@ -10,21 +11,32 @@ export interface User {
   name: string;
 }
 
+export enum Category {
+  FOOD = "Food",
+  TRANSPORTATION = "Transportation",
+  ENTERTAINMENT = "Entertainment",
+  SHOPPING = "Shopping",
+  ACCOMMODATION = "Accommodation",
+  OTHER = "Other",
+}
 export interface Transaction {
   id: number;
   amount: number;
-  currency: string;
+  currency: Currency;
   message: string;
+  details: string;
   userId: string;
   datetime: string;
+  category: Category;
 }
-
+export interface TransactionToSave extends Omit<Transaction, "id"> {}
 export interface GroupData {
   id: string;
   name: string;
   users: User[];
   transactions: Transaction[];
   lastAccessed: number;
+  defaultCurrency: Currency;
 }
 
 // Helper function to generate a unique group ID
@@ -47,6 +59,7 @@ export const saveGroup = async (
       ...groupData,
       id: groupId,
       lastAccessed: Date.now(),
+      defaultCurrency: groupData.defaultCurrency || "EUR", // Set a default value
     };
     await axios.post(`${API_URL}/groups`, newGroup);
     addRecentGroup(groupId, groupData.name);
@@ -77,9 +90,8 @@ export const updateGroup = async (
 
 export const getGroup = async (groupId: string): Promise<GroupData | null> => {
   try {
-    const response = await axios.get(`${API_URL}/groups`);
-    const groups = response.data;
-    const group = groups.find((g: GroupData) => g.id === groupId);
+    const response = await axios.get(`${API_URL}/groups?id=${groupId}`);
+    const group = response.data;
     if (group) {
       addRecentGroup(groupId, group.name);
     }

@@ -1,25 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { getGroup, GroupData } from "../utils/storage";
-import GroupLayout from "./GroupLayout";
-import { convertCurrency } from "../utils/currencyConversion";
-import Loading from "./Loading";
-import GroupNotFound from "./GroupNotFound";
-import { settings } from "../settings/settings";
-import CurrencySelector from "./CurrencySelector";
+import { getGroup, GroupData } from "../../utils/storage";
+import { convertCurrency, Currency } from "../../utils/currencyConversion";
+import Loading from "../../components/Loading";
+import GroupNotFound from "../../components/GroupNotFound";
+import { settings } from "../../settings/settings";
 
 const GroupScore: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
-  const [selectedCurrency, setSelectedCurrency] = useState(
-    settings.defaultCurrency
-  );
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>("EUR");
 
   const {
     data: groupData,
     isLoading,
     error,
-  } = useQuery<GroupData | null>(["group", groupId], () => getGroup(groupId!));
+  } = useQuery<GroupData | null>(["group", groupId], () => getGroup(groupId!), {
+    onSuccess: (data) => {
+      if (data) {
+        setSelectedCurrency(data.defaultCurrency);
+      }
+    },
+  });
+
+  // Update selectedCurrency when groupData changes
+  useEffect(() => {
+    if (groupData) {
+      setSelectedCurrency(groupData.defaultCurrency);
+    }
+  }, [groupData]);
 
   if (isLoading) return <Loading />;
   if (error || !groupData) return <GroupNotFound />;
@@ -32,7 +41,7 @@ const GroupScore: React.FC = () => {
       const convertedAmount = convertCurrency(
         transaction.amount,
         transaction.currency,
-        selectedCurrency
+        selectedCurrency as Currency
       );
       balances[transaction.userId] += convertedAmount;
     });
@@ -84,56 +93,54 @@ const GroupScore: React.FC = () => {
     .toFixed(2);
 
   return (
-    <GroupLayout groupId={groupId!} groupName={groupData.name}>
+    <>
       <h1>Score</h1>
       <p className="mb-4">
         Calculates the total amount spent by each user and shows the settlements
         needed to balance the group.
       </p>
+      <div className="mb-4"></div>
       <div className="mb-4">
-        <CurrencySelector
-          selectedCurrency={selectedCurrency}
-          onCurrencyChange={setSelectedCurrency}
-        />
-      </div>
-      <div className="mb-4">
-        <h3 className="text-xl font-semibold pb-2">
+        <h2 className="text-xl font-semibold pb-2">
           Total Spent: {selectedCurrency} {totalSpent}
-        </h3>
+        </h2>
         {groupData.users.map((user, index) => {
           const userColor =
             settings.userColors[index % settings.userColors.length];
           return (
-            <p
+            <div
               key={user.id}
-              className="mb-4 p-2 bg-gray-100 rounded text-secondary-text flex items-center"
+              className="mb-4 p-2  rounded text-secondary-text flex items-center"
             >
-              <div
-                className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
-                style={{ backgroundColor: userColor }}
-              ></div>
-              <span className="font-medium">{user.name}:</span>{" "}
-              {selectedCurrency} {balances[user.id].toFixed(2)}
-            </p>
+              <div className="flex justify-between w-full">
+                <div className="flex items-center">
+                  <div
+                    className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
+                    style={{ backgroundColor: userColor }}
+                  ></div>
+                  <span className="font-medium">{user.name}</span>
+                </div>
+                <span className="font-medium">
+                  {selectedCurrency} {balances[user.id].toFixed(2)}
+                </span>
+              </div>
+            </div>
           );
         })}
       </div>
       <div className="mt-6">
-        <h3 className="text-xl font-semibold mb-3">Settlements</h3>
+        <h2 className="text-xl font-semibold mb-3">Settlements</h2>
         {settlements.map((settlement, index) => (
-          <p
-            key={index}
-            className="mb-4 p-2 bg-gray-100 rounded text-secondary-text"
-          >
+          <div key={index} className="mb-4 p-2 rounded text-secondary-text">
             <span className="font-medium">{settlement.from}</span> pays{" "}
             <span className="font-medium">{settlement.to}</span>:{" "}
             <span className="font-bold">
               {selectedCurrency} {settlement.amount.toFixed(2)}
             </span>
-          </p>
+          </div>
         ))}
       </div>
-    </GroupLayout>
+    </>
   );
 };
 

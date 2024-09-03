@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 const { kv } = require("@vercel/kv");
 
-const KV_KEY = "groups-data";
+const GROUP_PREFIX = "group:";
 
 interface Group {
   id: string;
@@ -9,53 +9,60 @@ interface Group {
   users: any[];
   transactions: any[];
   lastAccessed: number;
+  defaultCurrency: string; // Add this line
 }
 
-interface Database {
-  groups: Group[];
-}
+// ... existing code ...
 
-const readDB = async (): Promise<Database> => {
+const readGroup = async (id: string): Promise<Group | null> => {
   try {
-    const data = (await kv.get(KV_KEY)) as Database | null;
-    return data || { groups: [] };
+    return (await kv.get(`${GROUP_PREFIX}${id}`)) as Group | null;
   } catch (error) {
-    console.error("Error reading from Vercel KV:", error);
-    return { groups: [] };
+    console.error("Error reading group from Vercel KV:", error);
+    return null;
   }
 };
 
-const writeDB = async (data: Database): Promise<void> => {
+const writeGroup = async (group: Group): Promise<void> => {
   try {
-    await kv.set(KV_KEY, data);
+    await kv.set(`${GROUP_PREFIX}${group.id}`, group);
   } catch (error) {
-    console.error("Error writing to Vercel KV:", error);
+    console.error("Error writing group to Vercel KV:", error);
+  }
+};
+
+const getAllGroupIds = async (): Promise<string[]> => {
+  try {
+    return (await kv.keys(`${GROUP_PREFIX}*`)) as string[];
+  } catch (error) {
+    console.error("Error fetching group IDs from Vercel KV:", error);
+    return [];
   }
 };
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
   console.log("API route hit:", req.method, req.url);
-  const { method } = req;
+  const { method, query } = req;
 
   switch (method) {
     case "GET":
-      const db = await readDB();
-      res.status(200).json(db.groups);
+      if (query.id) {
+        const group = await readGroup(query.id as string);
+        if (group) {
+          res.status(200).json(group);
+        } else {
+          res.status(404).json({ error: "Group not found" });
+        }
+      } else {
+        res.status(400).json({ error: "Group ID is required" });
+      }
       break;
     case "POST":
       const newGroup = req.body as Group;
-      const dbToWrite = await readDB();
-      const existingGroupIndex = dbToWrite.groups.findIndex(
-        (g) => g.id === newGroup.id
-      );
-      if (existingGroupIndex !== -1) {
-        // Update existing group
-        dbToWrite.groups[existingGroupIndex] = newGroup;
-      } else {
-        // Add new group
-        dbToWrite.groups.push(newGroup);
+      if (!newGroup.defaultCurrency) {
+        newGroup.defaultCurrency = "EUR"; // Set a default value if not provided
       }
-      await writeDB(dbToWrite);
+      await writeGroup(newGroup);
       res.status(201).json(newGroup);
       break;
     default:

@@ -15,10 +15,16 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses =
-    "text-white p-2 rounded-md transition-colors duration-200 ease-in-out";
+    "p-2 rounded-md transition-colors duration-200 ease-in-out";
   const variantClasses = {
-    primary: "bg-primary-button hover:bg-[#626B61]",
-    secondary: "bg-secondary-button hover:bg-[#7A8687]",
+    primary:
+      "bg-primary-button hover:bg-opacity-80 text-white active:bg-primary-button active:bg-primary-button-active",
+    secondary:
+      "border border-solid border-white hover:bg-opacity-80 text-white active:bg-secondary-button active:bg-secondary-button-active",
+  };
+  const OLD_variantClasses = {
+    primary: "bg-primary-button hover:bg-[#626B61] text-white",
+    secondary: "bg-secondary-button hover:bg-[#7A8687] text-white ",
   };
   const widthClass = fullWidth ? "w-full" : "";
 

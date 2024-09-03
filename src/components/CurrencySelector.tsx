@@ -1,9 +1,9 @@
 import React from "react";
-import { getSupportedCurrencies } from "../utils/currencyConversion";
+import { Currency, getSupportedCurrencies } from "../utils/currencyConversion";
 
 interface CurrencySelectorProps {
-  selectedCurrency: string;
-  onCurrencyChange: (currency: string) => void;
+  selectedCurrency: Currency;
+  onCurrencyChange: (currency: Currency) => void;
   className?: string;
 }
 
@@ -17,7 +17,7 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   return (
     <select
       value={selectedCurrency}
-      onChange={(e) => onCurrencyChange(e.target.value)}
+      onChange={(e) => onCurrencyChange(e.target.value as Currency)}
       className={`p-2 border rounded ${className}`}
     >
       {currencies.map((currency) => (

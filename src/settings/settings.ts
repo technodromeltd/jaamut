@@ -1,5 +1,6 @@
+import { Currency } from "../utils/currencyConversion";
 export const settings = {
-  defaultCurrency: "EUR",
+  defaultCurrency: "EUR" as Currency,
   userColors: [
     "#FF6B6B",
     "#4ECDC4",

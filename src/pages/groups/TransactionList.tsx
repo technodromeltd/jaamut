@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import GroupLayout from "./GroupLayout";
-import DeleteConfirmation from "./DeleteConfirmation";
-import TransactionDetails from "./TransactionDetails";
+import DeleteConfirmation from "../../components/DeleteConfirmation";
+import TransactionDetails from "../../components/TransactionDetails";
 import {
   Transaction,
   GroupData,
@@ -10,10 +9,11 @@ import {
   updateGroup,
   addRecentGroup,
   getGroup,
-} from "../utils/storage";
-import { settings } from "../settings/settings";
+} from "../../utils/storage";
+import { settings } from "../../settings/settings";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { convertCurrency } from "../utils/currencyConversion";
+import { convertCurrency, Currency } from "../../utils/currencyConversion";
+import CategoryIcon from "../../components/Category";
 
 const TransactionList: React.FC = () => {
   const queryClient = useQueryClient();
@@ -87,28 +87,26 @@ const TransactionList: React.FC = () => {
 
   const countTotalSumInCurrency = (
     transactions: Transaction[],
-    currency: string
+    currency: Currency
   ) => {
-    const sumInUsd = transactions.reduce((acc, transaction) => {
+    return transactions.reduce((acc, transaction) => {
       const exchangeRate = convertCurrency(
         transaction.amount,
         transaction.currency,
-        "USD"
+        currency
       );
       return acc + exchangeRate;
     }, 0);
-
-    const sumInCurrency = convertCurrency(sumInUsd, "USD", currency);
-
-    return sumInCurrency;
   };
 
   const dateSums =
     transactionsGroupedByDate &&
     Object.entries(transactionsGroupedByDate).map(
       ([date, { transactions }]) => {
-        const totalSum = countTotalSumInCurrency(transactions, "EUR");
-        // fixed 2 decimal places
+        const totalSum = countTotalSumInCurrency(
+          transactions,
+          groupData?.defaultCurrency || "EUR"
+        );
         const totalSumFormatted = totalSum.toFixed(2);
 
         return { date, totalSum: totalSumFormatted };
@@ -116,61 +114,59 @@ const TransactionList: React.FC = () => {
     );
 
   return (
-    <GroupLayout groupId={groupId!} groupName={groupData?.name ?? ""}>
-      <div className="mt-8">
-        <h1>{`Transactions (${groupData?.transactions.length})`}</h1>
-        <p>List of all transactions in the group by date.</p>
-        {transactionsGroupedByDate &&
-          Object.entries(transactionsGroupedByDate).map(
-            ([date, { transactions, totalSum }]) => (
-              <div key={date}>
-                <h3>
-                  {new Date(date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                  <p className="text-sm text-gray-400">
-                    Total spent:{" "}
-                    <b>
-                      {
-                        dateSums?.find((dateSum) => dateSum.date === date)
-                          ?.totalSum
-                      }{" "}
-                      EUR
-                    </b>
-                  </p>
-                </h3>
-                {transactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="border-primary-text p-2 mb-2 rounded transition-colors duration-200 cursor-pointer flex items-center"
-                    onClick={() => setSelectedTransaction(transaction)}
-                  >
-                    <div
-                      className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
-                      style={{
-                        backgroundColor: getUserColor(transaction.userId),
-                      }}
-                    ></div>
-                    <div className="flex justify-between items-center flex-grow">
-                      <p className="font-normal">
-                        {transaction.message.length > 15
-                          ? `${transaction.message.slice(0, 15)}...`
-                          : transaction.message}
+    <div className="">
+      <h1>{`Transactions (${groupData?.transactions.length})`}</h1>
+      <p>List of all transactions in the group by date.</p>
+      {transactionsGroupedByDate &&
+        Object.entries(transactionsGroupedByDate).map(
+          ([date, { transactions }]) => (
+            <div key={date}>
+              <h2>
+                {new Date(date).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+                <p className="text-sm">
+                  Total spent:{" "}
+                  <b>
+                    {
+                      dateSums?.find((dateSum) => dateSum.date === date)
+                        ?.totalSum
+                    }{" "}
+                    {groupData?.defaultCurrency}
+                  </b>
+                </p>
+              </h2>
+              {transactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="border-primary-text p-2 mb-2 rounded transition-colors duration-200 cursor-pointer flex items-center"
+                  onClick={() => setSelectedTransaction(transaction)}
+                >
+                  <CategoryIcon
+                    category={transaction.category}
+                    color={getUserColor(transaction.userId)}
+                  />
+
+                  <div className="flex justify-between items-center flex-grow">
+                    <p className="font-normal">
+                      {transaction.message.length > 20
+                        ? `${transaction.message.slice(0, 20)}...`
+                        : transaction.message || "Unknown"}
+                    </p>
+                    <div className="text-sm text-white flex justify-between items-center">
+                      <p className="font-bold text-xl pr-4">
+                        {transaction.amount.toLocaleString()}{" "}
+                        {transaction.currency}
                       </p>
-                      <div className="text-sm text-white flex justify-between items-center">
-                        <p className="font-bold text-xl pr-4">
-                          {transaction.amount} {transaction.currency}
-                        </p>
-                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )
-          )}
-      </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
 
       {deleteConfirmation && (
         <DeleteConfirmation onConfirm={confirmDelete} onCancel={cancelDelete} />
@@ -188,7 +184,7 @@ const TransactionList: React.FC = () => {
           onDelete={handleDeleteTransaction}
         />
       )}
-    </GroupLayout>
+    </div>
   );
 };
 

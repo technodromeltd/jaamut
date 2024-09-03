@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import Button from "./Button";
-import { HiArrowLeft } from "react-icons/hi"; // Import the icon
 import { useSwipeable } from "react-swipeable";
-
+import logoSmall from "../assets/logo_small.png";
 interface GroupLayoutProps {
   groupId: string;
   groupName: string;
@@ -30,9 +29,6 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
   const [currentIndex, setCurrentIndex] = useState(
     groupLinksArray.indexOf(currentPath)
   );
-  const groupPath = `/groups/${groupId}`;
-  const isSubPath =
-    currentPath.startsWith(groupPath) && currentPath !== groupPath;
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -46,29 +42,30 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
       setCurrentIndex(prevIndex);
       navigate(groupLinksArray[prevIndex]);
     },
-    onSwiped: (eventData) => console.log("User Swiped!", eventData),
   });
   return (
     <div
-      className="container mx-auto p-4 h-full overflow-x-hidden"
+      className="container mx-auto px-4 py-2 h-full overflow-x-hidden"
       {...handlers}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-primary-text">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 mb-2 border-b border-primary-text">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Button
-              variant="primary"
-              onClick={() => navigate(isSubPath ? `/groups/${groupId}` : "/")}
-              className="mr-2"
-            >
-              <HiArrowLeft aria-hidden="true" />
-              <span className="sr-only">Back</span>
-            </Button>
-            <h1 className="text-2xl font-bold">{groupName}</h1>
+            <Link to="/">
+              <img
+                src={logoSmall}
+                alt="Bill Splitter Logo"
+                className="h-10 mr-2  rounded-md"
+              />
+            </Link>
+            <h1>{groupName}</h1>
           </div>
-          <Button variant="primary" onClick={toggleMenu} className="sm:hidden">
+          <span
+            onClick={toggleMenu}
+            className="sm:hidden text-4xl cursor-pointer flex items-center mt-[-0.5rem]" // Added flex and items-center for vertical alignment
+          >
             {isMenuOpen ? "✕" : "☰"}
-          </Button>
+          </span>
         </div>
         <nav
           className={`${isMenuOpen ? "block" : "hidden"} sm:block mt-4 sm:mt-0`}
@@ -76,14 +73,16 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
           <Link
             to={`/groups/${groupId}`}
             className="block sm:inline-block mb-2 sm:mb-0 sm:mr-2"
+            onClick={toggleMenu} // Close menu on click
           >
             <Button variant="secondary" fullWidth>
-              Add Transaction
+              Add
             </Button>
           </Link>
           <Link
             to={`/groups/${groupId}/transactions`}
             className="block sm:inline-block mb-2 sm:mb-0 sm:mr-2"
+            onClick={toggleMenu} // Close menu on click
           >
             <Button variant="secondary" fullWidth>
               Transactions
@@ -92,6 +91,7 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
           <Link
             to={`/groups/${groupId}/score`}
             className="block sm:inline-block mb-2 sm:mb-0 sm:mr-2"
+            onClick={toggleMenu} // Close menu on click
           >
             <Button variant="secondary" fullWidth>
               Score
@@ -100,6 +100,7 @@ const GroupLayout: React.FC<GroupLayoutProps> = ({
           <Link
             to={`/groups/${groupId}/settings`}
             className="block sm:inline-block"
+            onClick={toggleMenu} // Close menu on click
           >
             <Button variant="secondary" fullWidth>
               Settings

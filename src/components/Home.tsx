@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { saveGroup, getRecentGroups } from "../utils/storage";
+import { getRecentGroups } from "../utils/storage";
 import Button from "./Button";
-import logo from "../assets/logo.png"; // Import the logo
+import logo from "../assets/logo.png";
 
 const Home: React.FC = () => {
-  const [newGroupName, setNewGroupName] = useState("");
-  const [initialUsers, setInitialUsers] = useState("");
-  const [joinGroupName, setJoinGroupName] = useState("");
   const [recentGroups, setRecentGroups] = useState<
     { id: string; name: string }[]
   >([]);
@@ -17,68 +14,33 @@ const Home: React.FC = () => {
     setRecentGroups(getRecentGroups());
   }, []);
 
-  const handleCreateGroup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newGroupName.trim() && initialUsers.trim()) {
-      const users = initialUsers.split(",").map((name) => ({
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: name.trim(),
-      }));
-      const groupId = await saveGroup({
-        name: newGroupName.trim(),
-        users,
-        transactions: [],
-      });
-      navigate(`/groups/${groupId}`);
-    }
-  };
-
-  const handleJoinGroup = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate(`/groups/${joinGroupName}`);
-  };
-
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 mt-4">
       <div className="flex justify-center mb-8">
-        <img src={logo} alt="Bill Splitter Logo" className="h-32" />
+        <img src={logo} alt="Bill Splitter Logo" className="h-24" />
       </div>
-      <form onSubmit={handleJoinGroup} className="space-y-4 mb-8">
-        <input
-          type="text"
-          value={joinGroupName}
-          onChange={(e) => setJoinGroupName(e.target.value)}
-          placeholder="Enter group code"
-          className="p-2 border rounded w-full bg-white text-primary-bg"
-          required
-        />
+      <p className="mb-8">
+        WANDERWALLET is a travel expense tracker for groups with intelligent
+        receipt scanning for easiest logging and settlement counting for getting
+        even.
+      </p>
 
-        <Button type="submit" variant="primary" fullWidth>
-          Join Group
+      <div className="space-y-4 mb-8">
+        <Button
+          onClick={() => navigate("/create-group")}
+          variant="primary"
+          fullWidth
+        >
+          Create a Group
         </Button>
-      </form>
-      <h2 className="text-xl font-semibold mb-2">Create a new group</h2>
-      <form onSubmit={handleCreateGroup} className="space-y-4 mb-8">
-        <input
-          type="text"
-          value={newGroupName}
-          onChange={(e) => setNewGroupName(e.target.value)}
-          placeholder="Enter new group name"
-          className="p-2 border rounded w-full bg-white text-primary-bg"
-          required
-        />
-        <input
-          type="text"
-          value={initialUsers}
-          onChange={(e) => setInitialUsers(e.target.value)}
-          placeholder="Enter initial users (comma-separated)"
-          className="p-2 border rounded w-full bg-white text-primary-bg"
-          required
-        />
-        <Button type="submit" variant="primary" fullWidth>
-          Create Group
+        <Button
+          onClick={() => navigate("/join-group")}
+          variant="secondary"
+          fullWidth
+        >
+          Join a Group
         </Button>
-      </form>
+      </div>
 
       {recentGroups.length > 0 && (
         <div>

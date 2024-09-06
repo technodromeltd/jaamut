@@ -56,7 +56,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
       setTransaction({
         ...transaction,
         amount: 0,
-        currency: settings.defaultCurrency,
+        currency: "KRW",
         details: "",
         category: Category.OTHER,
         userId: "",

@@ -19,7 +19,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
 }) => {
   const [transaction, setTransaction] = useState<TransactionToSave>({
     amount: 0,
-    currency: settings.defaultCurrency,
+    currency: "KRW",
     details: "",
     category: Category.OTHER,
     userId: "",

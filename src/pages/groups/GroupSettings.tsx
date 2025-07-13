@@ -40,7 +40,7 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({
   };
 
   const handleShareGroup = React.useCallback(() => {
-    const groupLink = `${window.location.origin}/group/${groupId}`;
+    const groupLink = `${window.location.origin}/groups/${groupId}`;
 
     if (navigator.share) {
       navigator

@@ -39,7 +39,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
 
   useEffect(() => {
     const savedUserId = localStorage.getItem("lastSelectedUserId");
-    if (savedUserId) {
+    if (savedUserId && users.find((user) => user.id === savedUserId)) {
       setTransaction({ ...transaction, userId: savedUserId });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

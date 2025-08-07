@@ -14,6 +14,10 @@
   "routes": [
     { "src": "/api/groups", "dest": "/api/groups.ts" },
     { "src": "/api/idgaf", "dest": "/api/idgaf.ts" },
+    {
+      "src": "/api/migrate-participants",
+      "dest": "/api/migrate-participants.ts"
+    },
     { "src": "/idgaf/process", "dest": "/api/idgaf.ts" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "handle": "filesystem" },

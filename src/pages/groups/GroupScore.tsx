@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
-import { getGroup, GroupData } from "../../utils/storage";
+import { getGroup, GroupData, Category } from "../../utils/storage";
 import { convertCurrency, Currency } from "../../utils/currencyConversion";
 import Loading from "../../components/Loading";
 import GroupNotFound from "../../components/GroupNotFound";
@@ -43,7 +43,11 @@ const GroupScore: React.FC = () => {
         transaction.currency,
         selectedCurrency as Currency
       );
-      balances[transaction.userId] += convertedAmount;
+
+      // Add the full amount to the user who PAID for the transaction
+      if (balances.hasOwnProperty(transaction.userId)) {
+        balances[transaction.userId] += convertedAmount;
+      }
     });
 
     return balances;
@@ -92,18 +96,137 @@ const GroupScore: React.FC = () => {
     .reduce((sum, balance) => sum + balance, 0)
     .toFixed(2);
 
+  // Calculate spending by category
+  const calculateCategorySpending = () => {
+    const categoryTotals: { [key in Category]: number } = {
+      [Category.FOOD]: 0,
+      [Category.TRANSPORTATION]: 0,
+      [Category.ENTERTAINMENT]: 0,
+      [Category.SHOPPING]: 0,
+      [Category.ACCOMMODATION]: 0,
+      [Category.OTHER]: 0,
+    };
+
+    groupData.transactions.forEach((transaction) => {
+      const convertedAmount = convertCurrency(
+        transaction.amount,
+        transaction.currency,
+        selectedCurrency as Currency
+      );
+      categoryTotals[transaction.category] += convertedAmount;
+    });
+
+    return Object.entries(categoryTotals)
+      .filter(([_, amount]) => amount > 0)
+      .map(([category, amount]) => ({
+        category: category as Category,
+        amount,
+        percentage: (amount / parseFloat(totalSpent)) * 100,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  };
+
+  const categorySpending = calculateCategorySpending();
+
+  // Pie chart colors
+  const pieColors = [
+    "#FF6B6B",
+    "#4ECDC4",
+    "#45B7D1",
+    "#96CEB4",
+    "#FFEAA7",
+    "#DDA0DD",
+    "#98D8C8",
+    "#F7DC6F",
+    "#BB8FCE",
+    "#85C1E9",
+    "#F8C471",
+    "#82E0AA",
+  ];
+
   return (
     <>
       <h1>Score</h1>
       <p className="mb-4">
-        Calculates the total amount spent by each user and shows the settlements
+        Shows the total amount paid by each user and calculates settlements
         needed to balance the group.
       </p>
       <div className="mb-4"></div>
       <div className="mb-4">
         <h2 className="text-xl font-semibold pb-2">
-          Total Spent: {selectedCurrency} {totalSpent}
+          Total Group Spending: {selectedCurrency} {totalSpent}
         </h2>
+
+        {/* Category Spending Section */}
+        {categorySpending.length > 0 && (
+          <div className="mt-6 mb-6">
+            <h3 className="text-lg font-semibold mb-3">Spending by Category</h3>
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Pie Chart */}
+              <div className="flex-1">
+                <svg width="200" height="200" className="mx-auto">
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="80"
+                    fill="none"
+                    stroke="#333"
+                    strokeWidth="2"
+                  />
+                  {categorySpending.map((item, index) => {
+                    const startAngle =
+                      categorySpending
+                        .slice(0, index)
+                        .reduce((sum, cat) => sum + cat.percentage, 0) * 3.6;
+                    const endAngle = startAngle + item.percentage * 3.6;
+                    const startRad = (startAngle - 90) * (Math.PI / 180);
+                    const endRad = (endAngle - 90) * (Math.PI / 180);
+
+                    const x1 = 100 + 80 * Math.cos(startRad);
+                    const y1 = 100 + 80 * Math.sin(startRad);
+                    const x2 = 100 + 80 * Math.cos(endRad);
+                    const y2 = 100 + 80 * Math.sin(endRad);
+
+                    const largeArcFlag = item.percentage > 50 ? 1 : 0;
+
+                    return (
+                      <path
+                        key={item.category}
+                        d={`M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2} Z`}
+                        fill={pieColors[index % pieColors.length]}
+                        stroke="#333"
+                        strokeWidth="1"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
+
+              {/* Category Legend */}
+              <div className="flex-1">
+                <div className="space-y-2">
+                  {categorySpending.map((item, index) => (
+                    <div
+                      key={item.category}
+                      className="flex items-center gap-2"
+                    >
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{
+                          backgroundColor: pieColors[index % pieColors.length],
+                        }}
+                      />
+                      <span className="text-sm">
+                        {item.category}: {selectedCurrency}{" "}
+                        {item.amount.toFixed(2)} ({item.percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {groupData.users.map((user, index) => {
           const userColor =
             settings.userColors[index % settings.userColors.length];
@@ -121,7 +244,7 @@ const GroupScore: React.FC = () => {
                   <span className="font-medium">{user.name}</span>
                 </div>
                 <span className="font-medium">
-                  {selectedCurrency} {balances[user.id].toFixed(2)}
+                  Paid: {selectedCurrency} {balances[user.id].toFixed(2)}
                 </span>
               </div>
             </div>

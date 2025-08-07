@@ -7,6 +7,7 @@ import Button from "./Button";
 import { FaCamera, FaFileImage } from "react-icons/fa";
 import Loading from "./Loading";
 import { convertCurrency, Currency } from "../utils/currencyConversion";
+import MultiSelect from "./MultiSelect";
 
 interface TransactionInputProps {
   onAddTransaction: (transaction: TransactionToSave) => void;
@@ -25,6 +26,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
     userId: "",
     datetime: "",
     message: "",
+    participants: [], // Initialize with empty array
   });
 
   const [showToast, setShowToast] = useState(false);
@@ -42,12 +44,24 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
     if (savedUserId && users.find((user) => user.id === savedUserId)) {
       setTransaction({ ...transaction, userId: savedUserId });
     }
+    // Set default participants to all users
+    if (users.length > 0) {
+      setTransaction({
+        ...transaction,
+        participants: users.map((user) => user.id),
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [users]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (transaction.amount && transaction.currency && transaction.userId) {
+    if (
+      transaction.amount &&
+      transaction.currency &&
+      transaction.userId &&
+      transaction.participants.length > 0
+    ) {
       const transactionToSave = {
         ...transaction,
         datetime: new Date().toISOString(),
@@ -62,11 +76,14 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
         userId: "",
         datetime: "",
         message: "",
+        participants: users.map((user) => user.id), // Reset to all users
       });
       setShowToast(true);
       localStorage.setItem("lastSelectedUserId", transaction.userId);
     } else {
-      setErrorMessage("Please fill in all fields");
+      setErrorMessage(
+        "Please fill in all fields and select at least one participant"
+      );
     }
   };
 
@@ -98,7 +115,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
 
       const data: TransactionToSave = await response.json();
 
-      // Update state with received data
+      // Update state with received data, but preserve participants
       setTransaction({
         ...transaction,
         amount: data.amount,
@@ -107,6 +124,7 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
         category: data.category,
         datetime: data.datetime,
         message: data.message,
+        participants: transaction.participants, // Keep current participants
       });
 
       setShowToast(true);
@@ -152,6 +170,10 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
     updateAmountInDefaultCurrency(amount, transaction.currency);
   };
 
+  const handleParticipantsChange = (participantIds: string[]) => {
+    setTransaction({ ...transaction, participants: participantIds });
+  };
+
   const fileInputRef = useRef<HTMLInputElement | null>(null); // Create a ref for the file input
 
   return (
@@ -166,8 +188,20 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
             />
             <input
               type="number"
-              value={Number(transaction.amount).toString()}
-              onChange={(e) => handleAmountChange(parseFloat(e.target.value))}
+              value={
+                transaction.amount === 0 ? "" : transaction.amount.toString()
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "") {
+                  handleAmountChange(0);
+                } else {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    handleAmountChange(numValue);
+                  }
+                }
+              }}
               placeholder="0"
               min="0"
               step="0.01" // Allow decimal values
@@ -222,6 +256,16 @@ const TransactionInput: React.FC<TransactionInputProps> = ({
               </option>
             ))}
           </select>
+
+          {/* MultiSelect for participants */}
+          <MultiSelect
+            users={users}
+            selectedUserIds={transaction.participants}
+            onSelectionChange={handleParticipantsChange}
+            placeholder="Select participants (default: all users)"
+            className="w-full bg-transparent"
+          />
+
           <div className="flex gap-2 w-full">
             {isLoading ? (
               <div className="flex-1 flex justify-center items-center">

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import DeleteConfirmation from "../../components/DeleteConfirmation";
 import TransactionDetails from "../../components/TransactionDetails";
+import TransactionEdit from "../../components/TransactionEdit";
 import {
   Transaction,
   GroupData,
@@ -21,7 +22,13 @@ const TransactionList: React.FC = () => {
     (newGroupData: Omit<GroupData, "id">) =>
       updateGroup(groupId!, newGroupData),
     {
-      onSuccess: () => {
+      onSuccess: (_, variables) => {
+        // Update the cache immediately with the new data
+        queryClient.setQueryData(["group", groupId], {
+          ...variables,
+          id: groupId,
+        });
+        // Also invalidate to ensure we have the latest data
         queryClient.invalidateQueries(["group", groupId]);
       },
     }
@@ -44,10 +51,27 @@ const TransactionList: React.FC = () => {
   );
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   const handleDeleteTransaction = (transactionId: number) => {
     setDeleteConfirmation(transactionId);
     setSelectedTransaction(null);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setSelectedTransaction(null);
+  };
+
+  const handleSaveTransaction = (updatedTransaction: Transaction) => {
+    if (groupData) {
+      const newTransactions = groupData.transactions.map((t) =>
+        t.id === updatedTransaction.id ? updatedTransaction : t
+      );
+      mutation.mutate({ ...groupData, transactions: newTransactions });
+      setEditingTransaction(null);
+    }
   };
 
   const cancelDelete = () => {
@@ -70,11 +94,19 @@ const TransactionList: React.FC = () => {
     }
   };
 
-  const sortedTransactions = groupData?.transactions.sort((a, b) => {
-    return new Date(b.datetime).getTime() - new Date(a.datetime).getTime();
-  });
+  const sortedTransactions = groupData?.transactions
+    ? [...groupData.transactions].sort((a, b) => {
+        return new Date(b.datetime).getTime() - new Date(a.datetime).getTime();
+      })
+    : undefined;
   const transactionsGroupedByDate = sortedTransactions?.reduce(
     (acc, transaction) => {
+      // Ensure we have a valid datetime string
+      if (!transaction.datetime) {
+        console.warn("Transaction missing datetime:", transaction);
+        return acc;
+      }
+
       const date = transaction.datetime.split("T")[0];
       if (!acc[date]) {
         acc[date] = { transactions: [], totalSum: 0 };
@@ -109,7 +141,26 @@ const TransactionList: React.FC = () => {
         );
         const totalSumFormatted = totalSum.toFixed(2);
 
-        return { date, totalSum: totalSumFormatted };
+        // Calculate unique participants for this date
+        const allParticipants = new Set<string>();
+        transactions.forEach((transaction) => {
+          transaction.participants?.forEach((participantId) => {
+            allParticipants.add(participantId);
+          });
+        });
+
+        const participantCount = allParticipants.size;
+        const perPersonShare =
+          participantCount > 0
+            ? (totalSum / participantCount).toFixed(2)
+            : "0.00";
+
+        return {
+          date,
+          totalSum: totalSumFormatted,
+          participantCount,
+          perPersonShare,
+        };
       }
     );
 
@@ -136,6 +187,20 @@ const TransactionList: React.FC = () => {
                     }{" "}
                     {groupData?.defaultCurrency}
                   </b>
+                  <br />
+                  <span className="text-xs opacity-75">
+                    Per person:{" "}
+                    {
+                      dateSums?.find((dateSum) => dateSum.date === date)
+                        ?.perPersonShare
+                    }{" "}
+                    {groupData?.defaultCurrency}(
+                    {
+                      dateSums?.find((dateSum) => dateSum.date === date)
+                        ?.participantCount
+                    }{" "}
+                    participants)
+                  </span>
                 </p>
               </h2>
               {transactions.map((transaction) => (
@@ -180,8 +245,19 @@ const TransactionList: React.FC = () => {
               (u) => u.id === selectedTransaction.userId
             ) as User
           }
+          users={groupData?.users || []}
           onClose={() => setSelectedTransaction(null)}
           onDelete={handleDeleteTransaction}
+          onEdit={handleEditTransaction}
+        />
+      )}
+
+      {editingTransaction && (
+        <TransactionEdit
+          transaction={editingTransaction}
+          users={groupData?.users || []}
+          onSave={handleSaveTransaction}
+          onCancel={() => setEditingTransaction(null)}
         />
       )}
     </div>

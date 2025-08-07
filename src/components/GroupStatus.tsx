@@ -25,7 +25,20 @@ const GroupStatus: React.FC<GroupStatusProps> = ({ transactions, users }) => {
         transaction.currency,
         selectedCurrency
       );
-      balances[transaction.userId] += convertedAmount;
+
+      // Handle participants - split amount equally among participants
+      const participants =
+        transaction.participants && transaction.participants.length > 0
+          ? transaction.participants
+          : [transaction.userId]; // Fallback for backward compatibility
+
+      const amountPerParticipant = convertedAmount / participants.length;
+
+      participants.forEach((participantId) => {
+        if (balances.hasOwnProperty(participantId)) {
+          balances[participantId] += amountPerParticipant;
+        }
+      });
     });
 
     return balances;

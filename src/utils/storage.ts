@@ -28,6 +28,7 @@ export interface Transaction {
   userId: string;
   datetime: string;
   category: Category;
+  participants: string[]; // Array of user IDs who are part of this transaction
 }
 export interface TransactionToSave extends Omit<Transaction, "id"> {}
 export interface GroupData {
@@ -94,8 +95,9 @@ export const getGroup = async (groupId: string): Promise<GroupData | null> => {
     const group = response.data;
     if (group) {
       addRecentGroup(groupId, group.name);
+      return group;
     }
-    return group || null;
+    return null;
   } catch (error) {
     console.error("Error getting group:", error);
     throw error;
@@ -138,3 +140,62 @@ export const deleteTransaction = async (
 };
 
 // Remove saveLastGroup and getLastGroup functions as they're no longer needed
+
+// Migration utility for existing transactions without participants
+export const migrateTransactionParticipants = (
+  transaction: Transaction
+): Transaction => {
+  if (!transaction.participants) {
+    return {
+      ...transaction,
+      participants: [transaction.userId], // Default to the transaction owner
+    };
+  }
+  return transaction;
+};
+
+// Migration utility for group data
+export const migrateGroupParticipants = (groupData: GroupData): GroupData => {
+  return {
+    ...groupData,
+    transactions: groupData.transactions.map(migrateTransactionParticipants),
+  };
+};
+
+// One-time migration function to update all transactions in a group
+export const migrateGroupParticipantsInDB = async (
+  groupId: string,
+  defaultToAllUsers: boolean = true
+): Promise<void> => {
+  try {
+    const group = await getGroup(groupId);
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    const updatedTransactions = group.transactions.map((transaction) => {
+      if (!transaction.participants) {
+        return {
+          ...transaction,
+          participants: defaultToAllUsers
+            ? group.users.map((user) => user.id)
+            : [transaction.userId],
+        };
+      }
+      return transaction;
+    });
+
+    const updatedGroup = {
+      ...group,
+      transactions: updatedTransactions,
+    };
+
+    await updateGroup(groupId, updatedGroup);
+    console.log(
+      `Successfully migrated ${updatedTransactions.length} transactions in group ${groupId}`
+    );
+  } catch (error) {
+    console.error("Error migrating group participants:", error);
+    throw error;
+  }
+};

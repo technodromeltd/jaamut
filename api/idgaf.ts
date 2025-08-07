@@ -64,7 +64,8 @@ currency: str - "EUR" | "USD" | "WON,
 category: str - optional, one of the following: ${Object.values(Category).join(
             ", "
           )},   
-datetime: Date of purchase 
+datetime: Date of purchase,
+participants: [] - empty array, will be populated by frontend
 }`,
         },
         {

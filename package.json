@@ -30,7 +30,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "migrate-participants": "node scripts/migrate-participants.js"
   },
   "eslintConfig": {
     "extends": [

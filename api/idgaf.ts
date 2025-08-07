@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const base64Image = resizedImageBuffer.toString("base64");
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5-mini",
       messages: [
         {
           role: "system",
@@ -80,7 +80,6 @@ participants: [] - empty array, will be populated by frontend
           ],
         },
       ],
-      max_tokens: 400,
       response_format: { type: "json_object" },
     });
 

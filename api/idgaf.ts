@@ -51,13 +51,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const base64Image = resizedImageBuffer.toString("base64");
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
           content: `You are an AI assistant that analyzes receipt images and extracts relevant information. Respond with json object in the following format:
 {
-message: str - short descriptive title for the transaction based on receipt like Dinner at X etc. The name of the place should be in the message if it is visible on the receipt and not too long,
+message: str - short descriptive title for the transaction based on receipt like Dinner/Lunch/Breakfast/Drinks at X etc. The name of the place should be in the message if it is visible on the receipt and not too long,
 details: str - more detailed description of the transaction like what was bought and where,
 amount: float - total sum with 2 decimal places,
 currency: str - "EUR" | "USD" | "WON,
@@ -80,7 +80,7 @@ participants: [] - empty array, will be populated by frontend
           ],
         },
       ],
-      max_tokens: 300,
+      max_tokens: 400,
       response_format: { type: "json_object" },
     });
 

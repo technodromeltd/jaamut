@@ -118,21 +118,36 @@ export const getRecentGroups = (): { id: string; name: string }[] => {
   return groups ? JSON.parse(groups) : [];
 };
 
+export const addTransaction = async (
+  groupId: string,
+  transaction: TransactionToSave
+): Promise<Transaction> => {
+  try {
+    const newTransaction: Transaction = {
+      id: Date.now(),
+      ...transaction,
+    };
+
+    await axios.post(`${API_URL}/transactions`, {
+      groupId,
+      transaction: newTransaction,
+    });
+
+    return newTransaction;
+  } catch (error) {
+    console.error("Error adding transaction:", error);
+    throw error;
+  }
+};
+
 export const deleteTransaction = async (
   groupId: string,
   transactionId: number
 ): Promise<void> => {
   try {
-    const group = await getGroup(groupId);
-    if (group) {
-      const updatedTransactions = group.transactions.filter(
-        (t) => t.id !== transactionId
-      );
-      await updateGroup(groupId, {
-        ...group,
-        transactions: updatedTransactions,
-      });
-    }
+    await axios.delete(
+      `${API_URL}/transactions?groupId=${groupId}&transactionId=${transactionId}`
+    );
   } catch (error) {
     console.error("Error deleting transaction:", error);
     throw error;

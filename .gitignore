@@ -90,3 +90,4 @@ dist
 .pnp.*
 .vercel
 .env*.local
+bu.json

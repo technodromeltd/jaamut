@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DeleteConfirmation from "../../components/DeleteConfirmation";
 import TransactionDetails from "../../components/TransactionDetails";
@@ -10,6 +10,7 @@ import {
   updateGroup,
   addRecentGroup,
   getGroup,
+  deleteTransaction,
 } from "../../utils/storage";
 import { settings } from "../../settings/settings";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -17,8 +18,34 @@ import { convertCurrency, Currency } from "../../utils/currencyConversion";
 import CategoryIcon from "../../components/Category";
 
 const TransactionList: React.FC = () => {
+  const { groupId } = useParams<{ groupId: string }>();
   const queryClient = useQueryClient();
-  const mutation = useMutation(
+
+  // Custom hook to refetch data when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Refetch data when page becomes visible
+        queryClient.invalidateQueries(["group", groupId]);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [queryClient, groupId]);
+
+  const deleteTransactionMutation = useMutation(
+    (transactionId: number) => deleteTransaction(groupId!, transactionId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["group", groupId]);
+      },
+    }
+  );
+
+  const updateTransactionMutation = useMutation(
     (newGroupData: Omit<GroupData, "id">) =>
       updateGroup(groupId!, newGroupData),
     {
@@ -33,7 +60,6 @@ const TransactionList: React.FC = () => {
       },
     }
   );
-  const { groupId } = useParams<{ groupId: string }>();
 
   const { data: groupData } = useQuery(
     ["group", groupId],
@@ -44,6 +70,23 @@ const TransactionList: React.FC = () => {
           addRecentGroup(data.id, data.name);
         }
       },
+      // Override global settings for this specific query
+      // Refetch data when window regains focus (overrides global false)
+      refetchOnWindowFocus: true,
+      // Refetch data when component mounts
+      refetchOnMount: true,
+      // Cache data for 1 minute (60 seconds) - same as global
+      staleTime: 60 * 1000,
+      // Keep data in cache for 1 minute after it becomes stale
+      cacheTime: 60 * 1000,
+      // Refetch data when page becomes visible again
+      refetchOnReconnect: true,
+      // Retry failed requests up to 3 times (overrides global 1)
+      retry: 3,
+      // Retry delay between attempts (exponential backoff)
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      // Show loading state while refetching in background
+      keepPreviousData: true,
     }
   );
   const [deleteConfirmation, setDeleteConfirmation] = useState<number | null>(
@@ -69,7 +112,10 @@ const TransactionList: React.FC = () => {
       const newTransactions = groupData.transactions.map((t) =>
         t.id === updatedTransaction.id ? updatedTransaction : t
       );
-      mutation.mutate({ ...groupData, transactions: newTransactions });
+      updateTransactionMutation.mutate({
+        ...groupData,
+        transactions: newTransactions,
+      });
       setEditingTransaction(null);
     }
   };
@@ -85,11 +131,8 @@ const TransactionList: React.FC = () => {
   };
 
   const confirmDelete = () => {
-    if (groupData && deleteConfirmation) {
-      const newTransactions = groupData.transactions.filter(
-        (t) => t.id !== deleteConfirmation
-      );
-      mutation.mutate({ ...groupData, transactions: newTransactions });
+    if (deleteConfirmation) {
+      deleteTransactionMutation.mutate(deleteConfirmation);
       setDeleteConfirmation(null);
     }
   };

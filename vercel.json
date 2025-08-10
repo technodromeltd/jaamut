@@ -13,6 +13,7 @@
   ],
   "routes": [
     { "src": "/api/groups", "dest": "/api/groups.ts" },
+    { "src": "/api/transactions", "dest": "/api/transactions.ts" },
     { "src": "/api/idgaf", "dest": "/api/idgaf.ts" },
     {
       "src": "/api/migrate-participants",

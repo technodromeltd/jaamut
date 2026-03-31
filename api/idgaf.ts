@@ -9,7 +9,7 @@ const openai = new OpenAI({
 });
 
 const DEBUG = process.env.DEBUG === "true";
-const RECEIPT_MODEL = process.env.OPENAI_RECEIPT_MODEL || "gpt-5-mini";
+const RECEIPT_MODEL = process.env.OPENAI_RECEIPT_MODEL || "gpt-5.4-mini";
 const MAX_RECEIPT_IMAGE_WIDTH = 1200;
 const RECEIPT_IMAGE_QUALITY = 70;
 export enum Category {
@@ -47,7 +47,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [, files] = await form.parse(req);
 
     const uploadedPhoto = files.photo;
-    const file = Array.isArray(uploadedPhoto) ? uploadedPhoto[0] : uploadedPhoto;
+    const file = Array.isArray(uploadedPhoto)
+      ? uploadedPhoto[0]
+      : uploadedPhoto;
     if (!file) {
       return res.status(400).json({ error: "No image provided" });
     }
@@ -82,7 +84,7 @@ details: str - more detailed description of the transaction like what was bought
 amount: float - total sum with 2 decimal places,
 currency: str - "EUR" | "USD" | "WON,
 category: str - optional, one of the following: ${Object.values(Category).join(
-            ", "
+            ", ",
           )},   
 datetime: Date of purchase,
 participants: [] - empty array, will be populated by frontend
@@ -101,7 +103,6 @@ participants: [] - empty array, will be populated by frontend
         },
       ],
       response_format: { type: "json_object" },
-      temperature: 0,
     });
 
     const aiResponse = response.choices[0].message.content;

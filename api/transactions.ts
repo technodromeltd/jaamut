@@ -1,5 +1,11 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-const { kv } = require("@vercel/kv");
+import {
+  describeKvConnectivityError,
+  isKvConfigError,
+  isKvConnectivityFailure,
+  KV_SETUP_HINT,
+  kv,
+} from "../lib/kv";
 
 const GROUP_PREFIX = "group:";
 
@@ -25,20 +31,11 @@ interface Group {
 }
 
 const readGroup = async (id: string): Promise<Group | null> => {
-  try {
-    return (await kv.get(`${GROUP_PREFIX}${id}`)) as Group | null;
-  } catch (error) {
-    console.error("Error reading group from Vercel KV:", error);
-    return null;
-  }
+  return (await kv.get(`${GROUP_PREFIX}${id}`)) as Group | null;
 };
 
 const writeGroup = async (group: Group): Promise<void> => {
-  try {
-    await kv.set(`${GROUP_PREFIX}${group.id}`, group);
-  } catch (error) {
-    console.error("Error writing group to Vercel KV:", error);
-  }
+  await kv.set(`${GROUP_PREFIX}${group.id}`, group);
 };
 
 module.exports = async (req: VercelRequest, res: VercelResponse) => {
@@ -56,26 +53,32 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
       }
 
       try {
-        // Read the current group
         const group = await readGroup(groupId);
         if (!group) {
           return res.status(404).json({ error: "Group not found" });
         }
 
-        // Add the new transaction to the group
         const updatedGroup = {
           ...group,
           transactions: [...group.transactions, transaction],
           lastAccessed: Date.now(),
         };
 
-        // Write the updated group back
         await writeGroup(updatedGroup);
 
         res.status(201).json(transaction);
       } catch (error) {
         console.error("Error adding transaction:", error);
-        res.status(500).json({ error: "Failed to add transaction" });
+        const raw =
+          error instanceof Error ? error.message : "";
+        const configErr = isKvConfigError(raw);
+        res.status(configErr ? 503 : 500).json({
+          error: configErr
+            ? KV_SETUP_HINT
+            : isKvConnectivityFailure(error)
+              ? describeKvConnectivityError(error)
+              : "Failed to add transaction",
+        });
       }
       break;
 
@@ -89,13 +92,11 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
       }
 
       try {
-        // Read the current group
         const group = await readGroup(deleteGroupId as string);
         if (!group) {
           return res.status(404).json({ error: "Group not found" });
         }
 
-        // Remove the transaction from the group
         const updatedGroup = {
           ...group,
           transactions: group.transactions.filter(
@@ -104,13 +105,17 @@ module.exports = async (req: VercelRequest, res: VercelResponse) => {
           lastAccessed: Date.now(),
         };
 
-        // Write the updated group back
         await writeGroup(updatedGroup);
 
         res.status(200).json({ message: "Transaction deleted successfully" });
       } catch (error) {
         console.error("Error deleting transaction:", error);
-        res.status(500).json({ error: "Failed to delete transaction" });
+        const raw =
+          error instanceof Error ? error.message : "";
+        const configErr = isKvConfigError(raw);
+        res.status(configErr ? 503 : 500).json({
+          error: configErr ? KV_SETUP_HINT : "Failed to delete transaction",
+        });
       }
       break;
 

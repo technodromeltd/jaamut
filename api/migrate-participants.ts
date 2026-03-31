@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-const { kv } = require("@vercel/kv");
+import { kv } from "../lib/kv";
 
 const GROUP_PREFIX = "group:";
 
@@ -14,7 +14,9 @@ interface Group {
 
 const readGroup = async (groupId: string): Promise<Group | null> => {
   try {
-    const groupData = await kv.get(`${GROUP_PREFIX}${groupId}`);
+    const groupData = (await kv.get(`${GROUP_PREFIX}${groupId}`)) as
+      | Group
+      | null;
     return groupData;
   } catch (error) {
     console.error("Error reading group:", error);

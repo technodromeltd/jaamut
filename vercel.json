@@ -1,33 +1,16 @@
 {
-  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
   "functions": {
     "api/idgaf.ts": {
       "maxDuration": 60
     }
   },
-  "builds": [
+  "rewrites": [
+    { "source": "/idgaf/process", "destination": "/api/idgaf" },
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
-    },
-    {
-      "src": "api/**/*.ts",
-      "use": "@vercel/node"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
-  ],
-  "routes": [
-    { "src": "/api/groups", "dest": "/api/groups.ts" },
-    { "src": "/api/transactions", "dest": "/api/transactions.ts" },
-    { "src": "/api/idgaf", "dest": "/api/idgaf.ts" },
-    {
-      "src": "/api/migrate-participants",
-      "dest": "/api/migrate-participants.ts"
-    },
-    { "src": "/idgaf/process", "dest": "/api/idgaf.ts" },
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "handle": "filesystem" },
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/[^.]+", "dest": "/index.html" }
   ]
 }

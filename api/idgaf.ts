@@ -2,13 +2,16 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 import { OpenAI } from "openai";
 import formidable from "formidable";
 import fs from "fs/promises";
-import sharp from "sharp"; // Import sharp for image processing
+import sharp from "sharp";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 const DEBUG = process.env.DEBUG === "true";
+const RECEIPT_MODEL = process.env.OPENAI_RECEIPT_MODEL || "gpt-5-mini";
+const MAX_RECEIPT_IMAGE_WIDTH = 1200;
+const RECEIPT_IMAGE_QUALITY = 70;
 export enum Category {
   FOOD = "Food",
   TRANSPORTATION = "Transportation",
@@ -32,26 +35,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  try {
-    const form = formidable();
-    const [_, files] = await form.parse(req);
+  let uploadedFilePath: string | null = null;
 
-    const file = files.photo?.[0];
+  try {
+    const startedAt = Date.now();
+    const form = formidable({
+      multiples: false,
+      maxFiles: 1,
+      allowEmptyFiles: false,
+    });
+    const [, files] = await form.parse(req);
+
+    const uploadedPhoto = files.photo;
+    const file = Array.isArray(uploadedPhoto) ? uploadedPhoto[0] : uploadedPhoto;
     if (!file) {
       return res.status(400).json({ error: "No image provided" });
     }
 
+    uploadedFilePath = file.filepath;
     const imageBuffer = await fs.readFile(file.filepath);
 
-    // Resize the image before processing
     const resizedImageBuffer = await sharp(imageBuffer)
-      .resize(800) // Resize to a width of 800 pixels, maintaining aspect ratio
+      .rotate()
+      .resize({
+        width: MAX_RECEIPT_IMAGE_WIDTH,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({
+        quality: RECEIPT_IMAGE_QUALITY,
+        mozjpeg: true,
+      })
       .toBuffer();
 
     const base64Image = resizedImageBuffer.toString("base64");
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: RECEIPT_MODEL,
       messages: [
         {
           role: "system",
@@ -81,6 +101,7 @@ participants: [] - empty array, will be populated by frontend
         },
       ],
       response_format: { type: "json_object" },
+      temperature: 0,
     });
 
     const aiResponse = response.choices[0].message.content;
@@ -90,22 +111,22 @@ participants: [] - empty array, will be populated by frontend
       return res.status(500).json({ error: "Failed to parse AI response" });
     }
 
+    if (DEBUG) {
+      console.log("Receipt processed", {
+        originalBytes: imageBuffer.length,
+        resizedBytes: resizedImageBuffer.length,
+        durationMs: Date.now() - startedAt,
+        model: RECEIPT_MODEL,
+      });
+    }
+
     return res.status(200).json(parsedResponse);
   } catch (error) {
     console.error("Error processing image:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    // Clean up temporary files
-    const form = formidable();
-    const [_, files] = await form.parse(req);
-    if (files) {
-      for (const fileArray of Object.values(files)) {
-        if (fileArray) {
-          for (const file of fileArray) {
-            await fs.unlink(file.filepath).catch(console.error);
-          }
-        }
-      }
+    if (uploadedFilePath) {
+      await fs.unlink(uploadedFilePath).catch(console.error);
     }
   }
 }

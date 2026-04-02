@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Transaction, User } from "../utils/storage";
 import {
-  convertCurrency,
   Currency,
   getSupportedCurrencies,
 } from "../utils/currencyConversion";
+import { calculateSettlementSummary } from "../utils/settlements";
 
 interface GroupStatusProps {
   transactions: Transaction[];
@@ -14,75 +14,14 @@ interface GroupStatusProps {
 const GroupStatus: React.FC<GroupStatusProps> = ({ transactions, users }) => {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("EUR");
   const supportedCurrencies = getSupportedCurrencies();
-
-  const calculateBalances = () => {
-    const balances: { [userId: string]: number } = {};
-    users.forEach((user) => (balances[user.id] = 0));
-
-    transactions.forEach((transaction) => {
-      const convertedAmount = convertCurrency(
-        transaction.amount,
-        transaction.currency,
-        selectedCurrency
-      );
-
-      // Handle participants - split amount equally among participants
-      const participants =
-        transaction.participants && transaction.participants.length > 0
-          ? transaction.participants
-          : [transaction.userId]; // Fallback for backward compatibility
-
-      const amountPerParticipant = convertedAmount / participants.length;
-
-      participants.forEach((participantId) => {
-        if (balances.hasOwnProperty(participantId)) {
-          balances[participantId] += amountPerParticipant;
-        }
-      });
-    });
-
-    return balances;
-  };
-
-  const calculateSettlements = (balances: { [userId: string]: number }) => {
-    const totalSpent = Object.values(balances).reduce(
-      (sum, balance) => sum + balance,
-      0
-    );
-    const averageSpent = totalSpent / users.length;
-    const settlements: { from: string; to: string; amount: number }[] = [];
-
-    const debtors = users.filter((user) => balances[user.id] < averageSpent);
-    const creditors = users.filter((user) => balances[user.id] > averageSpent);
-
-    debtors.forEach((debtor) => {
-      let debtAmount = averageSpent - balances[debtor.id];
-      creditors.forEach((creditor) => {
-        if (debtAmount > 0) {
-          const creditAmount = balances[creditor.id] - averageSpent;
-          const settlementAmount = Math.min(debtAmount, creditAmount);
-          if (settlementAmount > 0) {
-            settlements.push({
-              from: debtor.name,
-              to: creditor.name,
-              amount: Number(settlementAmount.toFixed(2)),
-            });
-            debtAmount -= settlementAmount;
-          }
-        }
-      });
-    });
-
-    return settlements;
-  };
-
-  const balances = calculateBalances();
-  const settlements = calculateSettlements(balances);
-
-  const totalSpent = Object.values(balances).reduce(
-    (sum, balance) => sum + balance,
-    0
-  );
+  const settlementSummary = calculateSettlementSummary({
+    users,
+    transactions,
+    currency: selectedCurrency,
+  });
+  const balances = settlementSummary.balances;
+  const settlements = settlementSummary.settlements;
+  const totalSpent = settlementSummary.totalPaid;
 
   return (
     <div>
@@ -110,7 +49,7 @@ const GroupStatus: React.FC<GroupStatusProps> = ({ transactions, users }) => {
         </h4>
         {users.map((user) => (
           <p key={user.id}>
-            {user.name}: {selectedCurrency} {balances[user.id].toFixed(2)}
+            {user.name}: {selectedCurrency} {balances[user.id].paid.toFixed(2)}
           </p>
         ))}
       </div>

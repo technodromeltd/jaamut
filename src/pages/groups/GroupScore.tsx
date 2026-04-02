@@ -6,6 +6,7 @@ import { convertCurrency, Currency } from "../../utils/currencyConversion";
 import Loading from "../../components/Loading";
 import GroupNotFound from "../../components/GroupNotFound";
 import { settings } from "../../settings/settings";
+import { calculateSettlementSummary } from "../../utils/settlements";
 
 const GroupScore: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -33,68 +34,14 @@ const GroupScore: React.FC = () => {
   if (isLoading) return <Loading />;
   if (error || !groupData) return <GroupNotFound />;
 
-  const calculateBalances = () => {
-    const balances: { [userId: string]: number } = {};
-    groupData.users.forEach((user) => (balances[user.id] = 0));
-
-    groupData.transactions.forEach((transaction) => {
-      const convertedAmount = convertCurrency(
-        transaction.amount,
-        transaction.currency,
-        selectedCurrency as Currency
-      );
-
-      // Add the full amount to the user who PAID for the transaction
-      if (balances.hasOwnProperty(transaction.userId)) {
-        balances[transaction.userId] += convertedAmount;
-      }
-    });
-
-    return balances;
-  };
-
-  const calculateSettlements = (balances: { [userId: string]: number }) => {
-    const totalSpent = Object.values(balances).reduce(
-      (sum, balance) => sum + balance,
-      0
-    );
-    const averageSpent = totalSpent / groupData.users.length;
-    const settlements: { from: string; to: string; amount: number }[] = [];
-
-    const debtors = groupData.users.filter(
-      (user) => balances[user.id] < averageSpent
-    );
-    const creditors = groupData.users.filter(
-      (user) => balances[user.id] > averageSpent
-    );
-
-    debtors.forEach((debtor) => {
-      let debtAmount = averageSpent - balances[debtor.id];
-      creditors.forEach((creditor) => {
-        if (debtAmount > 0) {
-          const creditAmount = balances[creditor.id] - averageSpent;
-          const settlementAmount = Math.min(debtAmount, creditAmount);
-          if (settlementAmount > 0) {
-            settlements.push({
-              from: debtor.name,
-              to: creditor.name,
-              amount: Number(settlementAmount.toFixed(2)),
-            });
-            debtAmount -= settlementAmount;
-          }
-        }
-      });
-    });
-
-    return settlements;
-  };
-
-  const balances = calculateBalances();
-  const settlements = calculateSettlements(balances);
-
-  const totalSpent = Object.values(balances)
-    .reduce((sum, balance) => sum + balance, 0)
-    .toFixed(2);
+  const settlementSummary = calculateSettlementSummary({
+    users: groupData.users,
+    transactions: groupData.transactions,
+    currency: selectedCurrency as Currency,
+  });
+  const balances = settlementSummary.balances;
+  const settlements = settlementSummary.settlements;
+  const totalSpent = settlementSummary.totalPaid.toFixed(2);
 
   // Calculate spending by category
   const calculateCategorySpending = () => {
@@ -244,7 +191,7 @@ const GroupScore: React.FC = () => {
                   <span className="font-medium">{user.name}</span>
                 </div>
                 <span className="font-medium">
-                  Paid: {selectedCurrency} {balances[user.id].toFixed(2)}
+                  Paid: {selectedCurrency} {balances[user.id].paid.toFixed(2)}
                 </span>
               </div>
             </div>
